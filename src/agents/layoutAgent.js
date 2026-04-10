@@ -1,4 +1,4 @@
-const { chromium } = require('playwright');
+const puppeteer = require('puppeteer');
 const path = require('path');
 const fs = require('fs');
 const { buildPostHTML } = require('./postTemplate');
@@ -19,11 +19,14 @@ async function runLayoutAgent({ headline, bullets, cta, system, imageB64, format
 
   const pngPath = path.join(outputDir, filename);
 
-  const browser = await chromium.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+  const browser = await puppeteer.launch({
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+    headless: true,
+  });
   const page = await browser.newPage();
 
-  await page.setViewportSize({ width, height });
-  await page.setContent(html, { waitUntil: 'networkidle' });
+  await page.setViewport({ width, height });
+  await page.setContent(html, { waitUntil: 'networkidle0' });
 
   // Wait extra for Google Fonts
   await page.waitForTimeout(1500);
