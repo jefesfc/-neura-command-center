@@ -1,10 +1,23 @@
-FROM node:20-slim
+# Stage 1: Build frontend + install backend deps
+FROM node:20-slim AS builder
+WORKDIR /app
 
-# Install Chromium and dependencies for Puppeteer
+COPY package*.json ./
+RUN npm install --ignore-scripts
+
+COPY client/package*.json ./client/
+RUN cd client && npm install --include=dev
+
+COPY . .
+RUN cd client && npm run build
+
+# Stage 2: Runtime with Chromium
+FROM node:20-slim
+WORKDIR /app
+
 RUN apt-get update && apt-get install -y \
     chromium \
     fonts-liberation \
-    libappindicator3-1 \
     libasound2 \
     libatk-bridge2.0-0 \
     libatk1.0-0 \
@@ -22,23 +35,15 @@ RUN apt-get update && apt-get install -y \
     --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
-# Tell Puppeteer to use installed Chromium, not download its own
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
-WORKDIR /app
-
-# Install backend deps
-COPY package*.json ./
-RUN npm install
-
-# Install and build frontend
-COPY client/package*.json ./client/
-RUN cd client && npm install --include=dev
-
+# Copy built artifacts from builder
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/client/dist ./client/dist
 COPY . .
-RUN cd client && npm run build
+
+RUN mkdir -p social-posts
 
 EXPOSE 3000
-
 CMD ["node", "server.js"]
