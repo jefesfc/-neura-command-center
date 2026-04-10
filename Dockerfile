@@ -1,11 +1,14 @@
-FROM node:20-slim
+FROM node:20-alpine
+
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install --ignore-scripts
+# Install backend dependencies
+COPY package.json ./
+RUN npm install --omit=dev
 
-COPY client/package*.json ./client/
-RUN cd client && npm install --include=dev
+# Install and build frontend
+COPY client/package.json ./client/
+RUN cd client && npm install
 
 COPY . .
 RUN cd client && npm run build
@@ -13,4 +16,5 @@ RUN cd client && npm run build
 RUN mkdir -p social-posts
 
 EXPOSE 3000
+
 CMD ["node", "server.js"]
