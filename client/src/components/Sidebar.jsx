@@ -26,11 +26,9 @@ export default function Sidebar() {
   return (
     <aside className="w-56 shrink-0 flex flex-col bg-navy-dark border-r border-white/8 h-screen sticky top-0">
       {/* Logo */}
-      <div className="px-6 py-6 border-b border-white/8">
-        <div className="font-display text-2xl font-bold tracking-widest text-white">
-          NEU<span className="text-teal">R</span>A
-        </div>
-        <div className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase mt-0.5">
+      <div className="px-6 py-6 border-b border-white/10">
+        <img src="/logo.png" alt="Neura" className="h-8 w-auto object-contain" />
+        <div className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase mt-2">
           Command Center
         </div>
       </div>
