@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --tw-navy: 11 30 45;
+  --tw-navy-light: 18 40 64;
+  --tw-navy-dark: 7 21 32;
+  --tw-teal: 31 162 184;
+  --tw-teal-light: 52 188 212;
+  --tw-teal-dark: 22 125 142;
+  --tw-gold: 201 138 90;
+  --tw-gold-light: 219 169 122;
+  --tw-gold-dark: 166 107 62;
+}
+
 @layer base {
   html, body {
     @apply bg-navy text-white;

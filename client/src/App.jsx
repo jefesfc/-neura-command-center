@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { applyTheme } from './theme';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import PostGenerator from './pages/PostGenerator';
@@ -10,6 +11,10 @@ import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 
 export default function App() {
+  useEffect(() => {
+    fetch('/api/settings').then(r => r.json()).then(applyTheme).catch(() => {});
+  }, []);
+
   return (
     <Routes>
       <Route path="/" element={<Layout />}>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Save, Check } from 'lucide-react';
+import { applyTheme } from '../theme';
 
 const COLOR_KEYS = [
   { key: 'color_primary', label: 'Color Primary (Navy)' },
@@ -29,6 +30,7 @@ export default function Settings() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(settings),
     });
+    applyTheme(settings);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }

@@ -5,19 +5,19 @@ export default {
     extend: {
       colors: {
         navy: {
-          DEFAULT: '#0b1e2d',
-          light: '#122840',
-          dark: '#071520',
+          DEFAULT: 'rgb(var(--tw-navy) / <alpha-value>)',
+          light: 'rgb(var(--tw-navy-light) / <alpha-value>)',
+          dark: 'rgb(var(--tw-navy-dark) / <alpha-value>)',
         },
         teal: {
-          DEFAULT: '#1fa2b8',
-          light: '#34bcd4',
-          dark: '#167d8e',
+          DEFAULT: 'rgb(var(--tw-teal) / <alpha-value>)',
+          light: 'rgb(var(--tw-teal-light) / <alpha-value>)',
+          dark: 'rgb(var(--tw-teal-dark) / <alpha-value>)',
         },
         gold: {
-          DEFAULT: '#c98a5a',
-          light: '#dba97a',
-          dark: '#a66b3e',
+          DEFAULT: 'rgb(var(--tw-gold) / <alpha-value>)',
+          light: 'rgb(var(--tw-gold-light) / <alpha-value>)',
+          dark: 'rgb(var(--tw-gold-dark) / <alpha-value>)',
         },
       },
       fontFamily: {
