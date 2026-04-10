@@ -105,7 +105,7 @@ router.post('/step', async (req, res) => {
 
     if (step === 'layout') {
       const filename = `post_${postId}_${Date.now()}.png`;
-      const pngPath = await runLayoutAgent({
+      const { html } = await runLayoutAgent({
         headline: post.headline,
         bullets: post.bullets,
         cta: post.cta,
@@ -114,9 +114,8 @@ router.post('/step', async (req, res) => {
         format: post.format,
         filename,
       });
-      const pngUrl = `/social-posts/${filename}`;
-      await query('UPDATE posts SET png_path=$1, png_url=$2, updated_at=NOW() WHERE id=$3', [pngPath, pngUrl, postId]);
-      return res.json({ ok: true, pngUrl });
+      await query('UPDATE posts SET png_path=$1, updated_at=NOW() WHERE id=$2', [filename, postId]);
+      return res.json({ ok: true, html });
     }
 
     if (step === 'caption') {
@@ -173,10 +172,10 @@ async function runPipeline(jobId, { brief, system, format, tone }) {
       setStep('image', 'skipped', { warning: err.message });
     }
 
-    // Step 3: Layout
+    // Step 3: Layout — HTML returned, PNG rendered client-side
     setStep('layout', 'running');
     const filename = `post_${postId}_${Date.now()}.png`;
-    const pngPath = await runLayoutAgent({
+    const { html } = await runLayoutAgent({
       headline: copy.headline,
       bullets: copy.bullets,
       cta: copy.cta,
@@ -185,9 +184,8 @@ async function runPipeline(jobId, { brief, system, format, tone }) {
       format,
       filename,
     });
-    const pngUrl = `/social-posts/${filename}`;
-    await query('UPDATE posts SET png_path=$1, png_url=$2 WHERE id=$3', [pngPath, pngUrl, postId]);
-    setStep('layout', 'done', { pngUrl });
+    await query('UPDATE posts SET png_path=$1, post_html=$2 WHERE id=$3', [filename, html, postId]);
+    setStep('layout', 'done', { html });
 
     // Step 4: Caption
     setStep('caption', 'running');

@@ -22,6 +22,7 @@ async function initDB() {
         image_b64 TEXT,
         png_path TEXT,
         png_url TEXT,
+  post_html TEXT,
         caption TEXT,
         hashtags TEXT,
         status VARCHAR(20) DEFAULT 'draft',
