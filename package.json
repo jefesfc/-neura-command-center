@@ -4,18 +4,16 @@
   "description": "Neura Command Center — Social Studio & Post Generator",
   "main": "server.js",
   "scripts": {
-  "start": "node server.js",
-  "dev:server": "nodemon server.js",
-  "dev:client": "cd client && npm run dev",
-  "build": "cd client && npm install --include=dev && npm run build",
-  "install:all": "npm install && cd client && npm install",
- "postinstall": "echo 'skip playwright install'"
-},
+    "start": "node server.js",
+    "dev:server": "nodemon server.js",
+    "dev:client": "cd client && npm run dev",
+    "build": "cd client && npm install --include=dev && npm run build",
+    "install:all": "npm install && cd client && npm install",
+    "postinstall": "echo 'skip playwright install'"
+  },
   "engines": {
-  "node": "18.x"
-},
-
-  
+    "node": "20.x"
+  },
   "dependencies": {
     "axios": "^1.7.2",
     "cors": "^2.8.5",
