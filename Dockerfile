@@ -34,7 +34,7 @@ RUN npm install
 
 # Install and build frontend
 COPY client/package*.json ./client/
-RUN cd client && npm install
+RUN cd client && npm install --include=dev
 
 COPY . .
 RUN cd client && npm run build

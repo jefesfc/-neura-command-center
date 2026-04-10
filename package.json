@@ -7,7 +7,7 @@
   "start": "node server.js",
   "dev:server": "nodemon server.js",
   "dev:client": "cd client && npm run dev",
-  "build": "cd client && npm install && npm run build",
+  "build": "cd client && npm install --include=dev && npm run build",
   "install:all": "npm install && cd client && npm install",
  "postinstall": "echo 'skip playwright install'"
 },
