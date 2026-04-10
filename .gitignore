@@ -1,0 +1,9 @@
+node_modules/
+client/node_modules/
+client/dist/
+.env
+*.env
+social-posts/*.png
+social-posts/*.jpg
+generated_images/
+.DS_Store
