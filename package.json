@@ -9,7 +9,7 @@
   "dev:client": "cd client && npm run dev",
   "build": "cd client && npm install && npm run build",
   "install:all": "npm install && cd client && npm install",
-  "postinstall": "npx playwright install chromium --with-deps || true"
+ "postinstall": "echo 'skip playwright install'"
 },
   "dependencies": {
     "axios": "^1.7.2",
