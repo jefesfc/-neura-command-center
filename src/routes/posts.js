@@ -5,7 +5,7 @@ const { query } = require('../db');
 // GET all posts (with optional filters)
 router.get('/', async (req, res) => {
   const { status, system, limit = 50, offset = 0 } = req.query;
-  let sql = 'SELECT id, title, headline, bullets, cta, tone, system, format, caption, hashtags, status, png_url, created_at, updated_at FROM posts';
+  let sql = 'SELECT id, title, headline, bullets, cta, tone, system, format, caption, hashtags, status, image_b64, created_at, updated_at FROM posts';
   const params = [];
   const conditions = [];
 

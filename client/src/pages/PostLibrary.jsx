@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Download, Copy, Check, Trash2, RefreshCw } from 'lucide-react';
+import { Copy, Check, Trash2, RefreshCw } from 'lucide-react';
 
 const STATUSES = ['all', 'draft', 'ready', 'published'];
 const SYSTEMS = ['all', 'sistema-01', 'sistema-02', 'sistema-03'];
@@ -118,8 +118,8 @@ export default function PostLibrary() {
                   }`}
                   onClick={() => setSelected(post)}
                 >
-                  {post.png_url ? (
-                    <img src={post.png_url} alt="" className="w-full aspect-square object-cover" />
+                  {post.image_b64 ? (
+                    <img src={`data:image/jpeg;base64,${post.image_b64}`} alt="" className="w-full aspect-square object-cover" />
                   ) : (
                     <div className="w-full aspect-square bg-navy-light flex items-center justify-center">
                       <span className="text-white/10 text-xs">Sin imagen</span>
@@ -144,8 +144,8 @@ export default function PostLibrary() {
             <div className="card sticky top-8 animate-fade-in">
               <h2 className="font-display text-xl font-semibold text-white mb-4">{selected.headline || 'Post'}</h2>
 
-              {selected.png_url && (
-                <img src={selected.png_url} alt="" className="w-full rounded-lg mb-4 border border-white/8" />
+              {selected.image_b64 && (
+                <img src={`data:image/jpeg;base64,${selected.image_b64}`} alt="" className="w-full rounded-lg mb-4 border border-white/8" />
               )}
 
               <div className="flex gap-2 mb-4">
@@ -166,11 +166,6 @@ export default function PostLibrary() {
               )}
 
               <div className="flex flex-col gap-2">
-                {selected.png_url && (
-                  <a href={selected.png_url} download={`neura-post-${selected.id}.png`} className="btn-primary justify-center">
-                    <Download size={14} /> Descargar PNG
-                  </a>
-                )}
                 {selected.caption && (
                   <button onClick={() => copyCaption(selected)} className="btn-secondary justify-center">
                     {copied ? <><Check size={14} /> Copiado</> : <><Copy size={14} /> Copiar caption</>}
