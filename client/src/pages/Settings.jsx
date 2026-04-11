@@ -26,11 +26,19 @@ const MODEL_KEYS = [
   { key: 'openrouter_model_image', label: 'Modelo Imagen (OpenRouter)' },
 ];
 
-const ANIMATIONS = [
+const TEXT_ANIMATIONS = [
   { value: 'none',       label: 'Sin animación',  preview: 'Aa' },
   { value: 'shimmer',    label: 'Shimmer',        preview: 'Aa' },
   { value: 'glow',       label: 'Glow',           preview: 'Aa' },
   { value: 'typewriter', label: 'Typewriter',     preview: 'Aa' },
+];
+
+const BLOCK_ANIMATIONS = [
+  { value: 'none',       label: 'Sin animación', icon: '▭' },
+  { value: 'slide-up',   label: 'Slide up',      icon: '↑' },
+  { value: 'scale-in',   label: 'Scale in',      icon: '⊕' },
+  { value: 'slide-left', label: 'Slide left',    icon: '←' },
+  { value: 'glow-border',label: 'Glow border',   icon: '✦' },
 ];
 
 export default function Settings() {
@@ -46,9 +54,14 @@ export default function Settings() {
 
   function set(key, val) { setSettings(s => ({ ...s, [key]: val })); }
 
-  function handleAnimationChange(val) {
+  function handleTextAnimChange(val) {
     set('text_animation', val);
     document.body.setAttribute('data-text-anim', val);
+  }
+
+  function handleBlockAnimChange(val) {
+    set('block_animation', val);
+    document.body.setAttribute('data-block-anim', val);
   }
 
   async function handleSave() {
@@ -115,10 +128,10 @@ export default function Settings() {
         <h2 className="font-display text-xl font-semibold text-white mb-2">Animación de títulos</h2>
         <p className="text-white/30 text-xs mb-5">Efecto aplicado a los headings (H1, H2) de la app</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {ANIMATIONS.map(anim => (
+          {TEXT_ANIMATIONS.map(anim => (
             <button
               key={anim.value}
-              onClick={() => handleAnimationChange(anim.value)}
+              onClick={() => handleTextAnimChange(anim.value)}
               className={`rounded-xl border p-4 flex flex-col items-center gap-2 transition-all ${
                 (settings.text_animation || 'none') === anim.value
                   ? 'border-teal bg-teal/10'
@@ -137,6 +150,30 @@ export default function Settings() {
                 {anim.value === 'typewriter' ? 'Aa|' : anim.preview}
               </span>
               <span className="label text-[10px]">{anim.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Block animations */}
+      <div className="card mb-6">
+        <h2 className="font-display text-xl font-semibold text-white mb-2">Animación de bloques</h2>
+        <p className="text-white/30 text-xs mb-5">Efecto de entrada para las cards al cargar cada página</p>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          {BLOCK_ANIMATIONS.map(anim => (
+            <button
+              key={anim.value}
+              onClick={() => handleBlockAnimChange(anim.value)}
+              className={`rounded-xl border p-4 flex flex-col items-center gap-2 transition-all ${
+                (settings.block_animation || 'none') === anim.value
+                  ? 'border-teal bg-teal/10'
+                  : 'border-white/10 hover:border-white/25 bg-navy'
+              }`}
+            >
+              <span className={`text-2xl ${anim.value !== 'none' ? 'text-teal' : 'text-white/30'}`}>
+                {anim.icon}
+              </span>
+              <span className="label text-[10px] text-center">{anim.label}</span>
             </button>
           ))}
         </div>

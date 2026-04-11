@@ -15,4 +15,7 @@ export function applyTheme(settings) {
   if (settings.text_animation !== undefined) {
     document.body.setAttribute('data-text-anim', settings.text_animation || 'none');
   }
+  if (settings.block_animation !== undefined) {
+    document.body.setAttribute('data-block-anim', settings.block_animation || 'none');
+  }
 }

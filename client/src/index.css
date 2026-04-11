@@ -102,6 +102,53 @@ body { color: rgb(var(--color-text)); }
   .badge-published { @apply badge bg-gold/20 text-gold; }
 }
 
+/* Block animations */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes slideLeft {
+  from { opacity: 0; transform: translateX(32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes border-glow {
+  0%, 100% { box-shadow: 0 0 0px rgba(31,162,184,0); border-color: rgba(255,255,255,0.1); }
+  50%       { box-shadow: 0 0 18px rgba(31,162,184,0.35); border-color: rgba(31,162,184,0.5); }
+}
+
+[data-block-anim="slide-up"] .card {
+  animation: slideUp 0.45s cubic-bezier(0.22,1,0.36,1) both;
+}
+[data-block-anim="slide-up"] .card:nth-child(2) { animation-delay: 0.07s; }
+[data-block-anim="slide-up"] .card:nth-child(3) { animation-delay: 0.14s; }
+[data-block-anim="slide-up"] .card:nth-child(4) { animation-delay: 0.21s; }
+[data-block-anim="slide-up"] .card:nth-child(5) { animation-delay: 0.28s; }
+
+[data-block-anim="scale-in"] .card {
+  animation: scaleIn 0.4s cubic-bezier(0.22,1,0.36,1) both;
+}
+[data-block-anim="scale-in"] .card:nth-child(2) { animation-delay: 0.06s; }
+[data-block-anim="scale-in"] .card:nth-child(3) { animation-delay: 0.12s; }
+[data-block-anim="scale-in"] .card:nth-child(4) { animation-delay: 0.18s; }
+
+[data-block-anim="slide-left"] .card {
+  animation: slideLeft 0.4s cubic-bezier(0.22,1,0.36,1) both;
+}
+[data-block-anim="slide-left"] .card:nth-child(2) { animation-delay: 0.07s; }
+[data-block-anim="slide-left"] .card:nth-child(3) { animation-delay: 0.14s; }
+[data-block-anim="slide-left"] .card:nth-child(4) { animation-delay: 0.21s; }
+
+[data-block-anim="glow-border"] .card {
+  animation: border-glow 2.5s ease-in-out infinite;
+}
+[data-block-anim="glow-border"] .card:nth-child(2) { animation-delay: 0.4s; }
+[data-block-anim="glow-border"] .card:nth-child(3) { animation-delay: 0.8s; }
+[data-block-anim="glow-border"] .card:nth-child(4) { animation-delay: 1.2s; }
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
