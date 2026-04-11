@@ -12,6 +12,48 @@
   --tw-gold: 201 138 90;
   --tw-gold-light: 219 169 122;
   --tw-gold-dark: 166 107 62;
+  --color-text: 255 255 255;
+  --color-text-muted: 255 255 255;
+  --text-muted-opacity: 0.45;
+  --heading-animation: none;
+}
+
+/* Dynamic text colors */
+body { color: rgb(var(--color-text)); }
+
+/* Text animations */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes glow-pulse {
+  0%, 100% { text-shadow: 0 0 8px rgba(31,162,184,0.6), 0 0 20px rgba(31,162,184,0.3); }
+  50% { text-shadow: 0 0 16px rgba(31,162,184,0.9), 0 0 40px rgba(31,162,184,0.5); }
+}
+@keyframes typewriter-blink {
+  0%, 100% { border-color: transparent; }
+  50% { border-color: rgb(var(--tw-teal)); }
+}
+
+[data-text-anim="shimmer"] h1,
+[data-text-anim="shimmer"] h2 {
+  background: linear-gradient(90deg, rgb(var(--tw-teal)), rgb(var(--tw-gold)), rgb(var(--tw-teal-light)), rgb(var(--tw-teal)));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+}
+[data-text-anim="glow"] h1,
+[data-text-anim="glow"] h2 {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+[data-text-anim="typewriter"] h1::after,
+[data-text-anim="typewriter"] h2::after {
+  content: '|';
+  margin-left: 2px;
+  color: rgb(var(--tw-teal));
+  animation: typewriter-blink 1s step-end infinite;
 }
 
 @layer base {
