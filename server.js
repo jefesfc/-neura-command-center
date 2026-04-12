@@ -22,8 +22,13 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'client/dist/index.html'));
 });
 
+const { startBot } = require('./src/telegram/bot');
+
 initDB().then(() => {
-  app.listen(PORT, () => console.log(`[Neura] Running on port ${PORT}`));
+  app.listen(PORT, () => {
+    console.log(`[Neura] Running on port ${PORT}`);
+    startBot();
+  });
 }).catch(err => {
   console.error('[DB] Init failed:', err.message);
   process.exit(1);
