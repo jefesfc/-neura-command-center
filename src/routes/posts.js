@@ -1,6 +1,11 @@
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
+const path = require('path');
 const { query } = require('../db');
+
+const SOCIAL_POSTS_DIR = path.resolve(__dirname, '../../social-posts');
+if (!fs.existsSync(SOCIAL_POSTS_DIR)) fs.mkdirSync(SOCIAL_POSTS_DIR, { recursive: true });
 
 // GET all posts (with optional filters)
 router.get('/', async (req, res) => {
@@ -52,6 +57,30 @@ router.patch('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   await query('DELETE FROM posts WHERE id = $1', [req.params.id]);
   res.json({ ok: true });
+});
+
+// POST save rendered PNG to disk (called by client after html2canvas render)
+router.post('/:id/save-png', async (req, res) => {
+  const { pngB64, slideIndex } = req.body;
+  if (!pngB64) return res.status(400).json({ error: 'pngB64 required' });
+
+  const suffix = slideIndex !== undefined ? `_slide${slideIndex}` : '';
+  const filename = `post_${req.params.id}${suffix}.png`;
+  const filepath = path.join(SOCIAL_POSTS_DIR, filename);
+
+  try {
+    const buffer = Buffer.from(pngB64, 'base64');
+    fs.writeFileSync(filepath, buffer);
+
+    // Only update png_path for the main post image (no slideIndex or slideIndex === 0)
+    if (slideIndex === undefined || slideIndex === 0) {
+      await query('UPDATE posts SET png_path=$1, updated_at=NOW() WHERE id=$2', [filename, req.params.id]);
+    }
+
+    res.json({ ok: true, filename, url: `/social-posts/${filename}` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // GET stats for dashboard

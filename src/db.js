@@ -49,6 +49,22 @@ async function initDB() {
       );
     `);
 
+    // Safe column additions for existing deployments
+    await client.query(`ALTER TABLE posts ADD COLUMN IF NOT EXISTS palette VARCHAR(30) DEFAULT 'navy'`);
+    await client.query(`ALTER TABLE posts ADD COLUMN IF NOT EXISTS slides JSONB DEFAULT '[]'`);
+    await client.query(`ALTER TABLE posts ADD COLUMN IF NOT EXISTS post_type VARCHAR(20) DEFAULT 'single'`);
+    await client.query(`
+      DO $$ BEGIN
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name='posts' AND column_name='system'
+          AND character_maximum_length < 50
+        ) THEN
+          ALTER TABLE posts ALTER COLUMN system TYPE VARCHAR(50);
+        END IF;
+      END $$;
+    `);
+
     // Seed default settings if not present
     await client.query(`
       INSERT INTO settings (key, value) VALUES

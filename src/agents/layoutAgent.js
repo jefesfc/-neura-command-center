@@ -1,9 +1,14 @@
 const { buildPostHTML } = require('./postTemplate');
+const { buildCarouselSlides } = require('./carouselTemplate');
 
-// Layout agent now returns HTML — PNG is rendered client-side via html2canvas
-async function runLayoutAgent({ headline, bullets, cta, system, imageB64, format = '1:1', filename }) {
-  const html = buildPostHTML({ headline, bullets, cta, system, imageB64, format });
-  return { html, filename };
+async function runLayoutAgent({ headline, bullets, cta, system, imageB64, format = '1:1', palette = 'navy', postType = 'single', carouselSlides = [] }) {
+  if (postType === 'carousel' && carouselSlides.length > 0) {
+    const slides = buildCarouselSlides({ slides: carouselSlides, system, imageB64, format, palette });
+    return { html: slides[0]?.html || '', slides };
+  }
+
+  const html = buildPostHTML({ headline, bullets, cta, system, imageB64, format, palette });
+  return { html, slides: [] };
 }
 
 module.exports = { runLayoutAgent };
