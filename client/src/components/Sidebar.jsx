@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard, Wand2, AlignLeft, CalendarDays,
+  LayoutDashboard, Wand2, CalendarDays,
   Images, BarChart3, Settings, ChevronRight
 } from 'lucide-react';
 
@@ -11,7 +11,6 @@ const nav = [
     label: 'Social Studio',
     children: [
       { label: 'Post Generator', to: '/studio/generator', icon: Wand2 },
-      { label: 'Caption Builder', to: '/studio/caption', icon: AlignLeft },
       { label: 'Calendario', to: '/studio/calendar', icon: CalendarDays },
     ],
   },

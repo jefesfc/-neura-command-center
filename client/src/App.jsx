@@ -4,7 +4,6 @@ import { applyTheme } from './theme';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import PostGenerator from './pages/PostGenerator';
-import CaptionBuilder from './pages/CaptionBuilder';
 import ContentCalendar from './pages/ContentCalendar';
 import PostLibrary from './pages/PostLibrary';
 import Analytics from './pages/Analytics';
@@ -21,7 +20,6 @@ export default function App() {
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="studio/generator" element={<PostGenerator />} />
-        <Route path="studio/caption" element={<CaptionBuilder />} />
         <Route path="studio/calendar" element={<ContentCalendar />} />
         <Route path="library" element={<PostLibrary />} />
         <Route path="analytics" element={<Analytics />} />
