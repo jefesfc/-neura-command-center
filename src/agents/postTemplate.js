@@ -1,3 +1,14 @@
+const fs = require('fs');
+const path = require('path');
+
+let LOGO_B64 = '';
+try {
+  const logoPath = path.resolve(__dirname, '../../client/public/logo.png');
+  LOGO_B64 = fs.readFileSync(logoPath).toString('base64');
+} catch (e) {
+  // fallback to text logo if file not found
+}
+
 const SYSTEM_BADGE = {
   'sistema-01': 'Sistema 01',
   'sistema-02': 'Sistema 02',
@@ -64,16 +75,10 @@ function buildPostHTML({ headline, bullets, cta, system, imageB64, format = '1:1
     margin-bottom: ${isStory ? '120px' : '60px'};
   }
 
-  .logo {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: ${isStory ? '48px' : '38px'};
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    color: #ffffff;
-  }
-
-  .logo span {
-    color: #1fa2b8;
+  .logo img {
+    height: ${isStory ? '52px' : '40px'};
+    width: auto;
+    object-fit: contain;
   }
 
   .badge {
@@ -179,7 +184,7 @@ function buildPostHTML({ headline, bullets, cta, system, imageB64, format = '1:1
   <div class="overlay"></div>
   <div class="content">
     <div class="top-bar">
-      <div class="logo">NEU<span>R</span>A</div>
+      <div class="logo">${LOGO_B64 ? `<img src="data:image/png;base64,${LOGO_B64}" alt="Neura" />` : '<span style="font-family:\'Cormorant Garamond\',serif;font-size:38px;font-weight:700;letter-spacing:0.12em;color:#fff">NEURA</span>'}</div>
       <div class="badge">${badge}</div>
     </div>
 

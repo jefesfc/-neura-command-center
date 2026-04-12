@@ -9,29 +9,39 @@ const SYSTEM_LABELS = {
   'sistema-03': 'Sistema 03 — AI Operating System',
 };
 
-const SYSTEM_PROMPT = `Eres el Copy Agent de Neura — una empresa de IA para negocios latinoamericanos.
-Marca: NeuraSolutions. Tono: Premium, directo, inteligente. Sin tecnicismos innecesarios.
-Colores de marca: Navy #0b1e2d, Teal #1fa2b8, Gold #c98a5a.
-Tipografía de marca: Cormorant Garamond (títulos), Inter (cuerpo).
+const SYSTEM_PROMPT = `You are the Copy Agent for NeuraSolutions — an AI automation company that transforms Latin American businesses.
+Brand: NeuraSolutions. Tone: Premium, direct, intelligent, results-focused. No unnecessary jargon.
+Brand colors: Navy #0b1e2d, Teal #1fa2b8, Gold #c98a5a.
+Brand fonts: Cormorant Garamond (headings), Inter (body).
 
-Generas copy para posts de redes sociales (Instagram, Facebook) en español.
-Siempre devuelves JSON válido. Sin texto adicional fuera del JSON.`;
+You write high-impact social media copy (Instagram, Facebook) ALWAYS in English.
+Your copy is benefit-driven, marketing-trained, and explains the brief with depth and clarity.
+Every bullet must communicate a concrete, specific benefit or transformation — not vague statements.
+Always return valid JSON only. No text outside the JSON.`;
 
 async function runCopyAgent({ brief, system, tone, postId }) {
   const systemLabel = SYSTEM_LABELS[system] || system;
   const model = process.env.OPENAI_MODEL_COPY || 'gpt-4o';
 
   const userPrompt = `
-Brief del post: ${brief}
-Sistema: ${systemLabel}
-Tono: ${tone || 'profesional y directo'}
+Post brief: ${brief}
+System: ${systemLabel}
+Tone: ${tone || 'professional, premium, direct'}
 
-Genera el copy para un post de redes sociales. Devuelve SOLO este JSON:
+Write high-impact social media post copy in ENGLISH. The copy must clearly explain and expand on the brief — not summarize it vaguely.
+Each bullet point must be a specific, compelling benefit or outcome the audience will experience.
+Think like a senior marketing strategist: headline grabs attention, bullets sell the transformation, CTA drives action.
+
+Return ONLY this JSON:
 {
-  "headline": "Título principal impactante (máx 60 chars)",
-  "bullets": ["Punto clave 1 (conciso)", "Punto clave 2 (conciso)", "Punto clave 3 (conciso)"],
-  "cta": "Llamada a la acción (máx 40 chars)",
-  "image_prompt": "Prompt en inglés para generar imagen de fondo (abstracta, tech, premium, dark navy tones)"
+  "headline": "Bold, attention-grabbing headline that captures the core promise (max 60 chars)",
+  "bullets": [
+    "Specific benefit or outcome #1 — concrete and compelling (max 12 words)",
+    "Specific benefit or outcome #2 — concrete and compelling (max 12 words)",
+    "Specific benefit or outcome #3 — concrete and compelling (max 12 words)"
+  ],
+  "cta": "Action-oriented CTA that creates urgency (max 40 chars)",
+  "image_prompt": "Cinematic background image prompt in English: abstract tech, data flows, dark navy atmosphere, premium aesthetic, no text, ultra HD"
 }`;
 
   const t0 = Date.now();

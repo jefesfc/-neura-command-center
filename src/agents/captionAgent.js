@@ -3,24 +3,32 @@ const { query } = require('../db');
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-const SYSTEM_PROMPT = `Eres el Caption Agent de Neura. Generas captions optimizados para SEO en Instagram y Facebook.
-Tono: premium, inteligente, latinoamericano. Siempre en español.
-Devuelves SOLO JSON válido. Sin texto adicional.`;
+const SYSTEM_PROMPT = `You are the Caption Agent for NeuraSolutions. You write SEO-optimized captions for Instagram and Facebook.
+Tone: premium, intelligent, results-focused. Always write in English.
+You are a marketing expert — your captions tell a story, build desire, and drive action.
+Return ONLY valid JSON. No text outside the JSON.`;
 
 async function runCaptionAgent({ headline, bullets, cta, system, brief, postId }) {
   const model = process.env.OPENAI_MODEL_CAPTION || 'gpt-4o-mini';
 
   const userPrompt = `
-Sistema: ${system}
-Titular: ${headline}
-Puntos clave: ${(bullets || []).join(' | ')}
+System: ${system}
+Headline: ${headline}
+Key points: ${(bullets || []).join(' | ')}
 CTA: ${cta}
-Brief original: ${brief}
+Original brief: ${brief}
 
-Genera el caption para Instagram/Facebook. Devuelve SOLO este JSON:
+Write an Instagram/Facebook caption in ENGLISH. The caption must:
+- Open with a hook that stops the scroll
+- Expand on the brief with depth — explain the value and transformation
+- Use natural line breaks and strategic emojis
+- Build towards the CTA naturally
+- Max 300 words
+
+Return ONLY this JSON:
 {
-  "caption": "Caption completo con emojis, saltos de línea naturales. Máx 300 palabras. Incluye el CTA al final.",
-  "hashtags": "#hashtag1 #hashtag2 ... (15-20 hashtags relevantes en español e inglés)"
+  "caption": "Full caption in English with emojis and natural line breaks. Opens with hook, expands on value, ends with CTA.",
+  "hashtags": "#hashtag1 #hashtag2 ... (15-20 hashtags mixing English and Spanish for reach)"
 }`;
 
   const response = await client.chat.completions.create({
