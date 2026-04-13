@@ -74,6 +74,10 @@ const PALETTES = {
   },
 };
 
+function esc(str) {
+  return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 function buildPostHTML({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format = '1:1', palette = 'navy' }) {
   const isStory = format === '9:16';
   const width = 1080;
@@ -90,12 +94,12 @@ function buildPostHTML({ headline, headline_accent, subheadline, stats, descript
     : `<span class="logo-text">NEURA</span>`;
 
   // Headline with accent color
-  let headlineHtml = headline || '';
+  let headlineHtml = esc(headline);
   if (headline_accent && headline && headline.includes(headline_accent)) {
     const idx = headline.indexOf(headline_accent);
     const before = headline.slice(0, idx);
     const after = headline.slice(idx + headline_accent.length);
-    headlineHtml = `${before}<span style="color:${p.accent}">${headline_accent}</span>${after}`;
+    headlineHtml = `${esc(before)}<span style="color:${p.accent}">${esc(headline_accent)}</span>${esc(after)}`;
   }
 
   // Stats row
@@ -108,8 +112,8 @@ function buildPostHTML({ headline, headline_accent, subheadline, stats, descript
     const valColor = i === 1 ? p.accent2 : p.accent;
     const border = i < statsArr.length - 1 ? `border-right: 1px solid rgba(255,255,255,0.08);` : '';
     return `<div style="flex:1;padding:${isStory ? '14px 0' : '9px 0'};text-align:center;${border}">
-      <div style="font-family:'Cormorant Garamond',serif;font-size:${isStory ? '36px' : '22px'};font-weight:700;color:${valColor};line-height:1;">${s.value}</div>
-      <div style="font-size:${isStory ? '14px' : '9px'};color:rgba(255,255,255,0.4);margin-top:3px;">${s.label}</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:${isStory ? '36px' : '22px'};font-weight:700;color:${valColor};line-height:1;">${esc(s.value)}</div>
+      <div style="font-size:${isStory ? '14px' : '9px'};color:rgba(255,255,255,0.4);margin-top:3px;">${esc(s.label)}</div>
     </div>`;
   }).join('');
 
@@ -120,7 +124,7 @@ function buildPostHTML({ headline, headline_accent, subheadline, stats, descript
         ${bulletsArr.map(b => `
           <div style="display:flex;align-items:center;gap:${isStory ? '16px' : '10px'};">
             <div style="width:${isStory ? '22px' : '14px'};height:2px;background:${p.accent};flex-shrink:0;"></div>
-            <span style="font-size:${isStory ? '18px' : '11px'};color:rgba(255,255,255,0.6);line-height:1.4;">${b}</span>
+            <span style="font-size:${isStory ? '18px' : '11px'};color:rgba(255,255,255,0.6);line-height:1.4;">${esc(b)}</span>
           </div>`).join('')}
       </div>`
     : '';
@@ -283,12 +287,12 @@ function buildPostHTML({ headline, headline_accent, subheadline, stats, descript
     </div>
 
     <div class="main">
-      <div class="subheadline">${subheadline || ''}</div>
+      <div class="subheadline">${esc(subheadline)}</div>
       <h1 class="headline">${headlineHtml}</h1>
 
       <div class="stats-row">${statCells}</div>
 
-      <p class="description">${description || ''}</p>
+      <p class="description">${esc(description)}</p>
 
       ${bulletsHtml}
     </div>
@@ -296,7 +300,7 @@ function buildPostHTML({ headline, headline_accent, subheadline, stats, descript
     <div class="bottom-sep"></div>
     <div class="bottom-bar">
       <div class="cta-btn">
-        <span class="cta-text">${cta} →</span>
+        <span class="cta-text">${esc(cta)} →</span>
       </div>
       <span class="watermark">neurasolutions.cloud</span>
     </div>
