@@ -15,6 +15,7 @@ app.use('/api/posts', require('./src/routes/posts'));
 app.use('/api/generate', require('./src/routes/generate'));
 app.use('/api/analytics', require('./src/routes/analytics'));
 app.use('/api/settings', require('./src/routes/settings'));
+app.use('/api/prospector', require('./src/routes/prospector'));
 
 // Serve React in production
 app.use(express.static(path.join(__dirname, 'client/dist')));
@@ -23,8 +24,10 @@ app.get('*', (req, res) => {
 });
 
 const { startBot } = require('./src/telegram/bot');
+const { initScraperDB } = require('./src/db/scraper');
 
-initDB().then(() => {
+initDB().then(async () => {
+  await initScraperDB();
   app.listen(PORT, () => {
     console.log(`[Neura] Running on port ${PORT}`);
     startBot();

@@ -16,4 +16,14 @@ async function scraperQuery(text, params) {
   return getPool().query(text, params);
 }
 
-module.exports = { scraperQuery };
+async function initScraperDB() {
+  try {
+    await getPool().query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS phone TEXT`);
+    await getPool().query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS address TEXT`);
+    console.log('[ScraperDB] Columns ready.');
+  } catch (err) {
+    console.warn('[ScraperDB] Init warning:', err.message);
+  }
+}
+
+module.exports = { scraperQuery, initScraperDB };
