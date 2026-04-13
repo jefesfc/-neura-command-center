@@ -126,6 +126,14 @@ TYPOGRAPHY RULES
 - CTA: visible but not aggressive
 
 --------------------------------------------------
+COMPONENT RULES (NON-NEGOTIABLE)
+--------------------------------------------------
+
+- CTA must be centered horizontally
+- CTA button size must fit the text — no oversized blocks
+- Top-right labels (badge) must be centered inside their container
+
+--------------------------------------------------
 CONSISTENCY RULE
 --------------------------------------------------
 

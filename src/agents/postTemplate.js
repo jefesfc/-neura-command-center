@@ -204,6 +204,10 @@ function buildPostHTML({ headline, headline_accent, subheadline, stats, descript
     padding: ${isStory ? '10px 22px' : '6px 14px'};
     border-radius: 3px;
     background: rgba(0,0,0,0.25);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
   }
   .main {
     flex: 1;
@@ -252,12 +256,16 @@ function buildPostHTML({ headline, headline_accent, subheadline, stats, descript
   .bottom-bar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    position: relative;
   }
   .cta-btn {
     background: ${p.accent};
     padding: ${isStory ? '16px 36px' : '10px 22px'};
     border-radius: 2px;
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
   }
   .cta-text {
     font-family: 'Inter', sans-serif;
@@ -268,6 +276,8 @@ function buildPostHTML({ headline, headline_accent, subheadline, stats, descript
     text-transform: uppercase;
   }
   .watermark {
+    position: absolute;
+    right: 0;
     font-family: 'DM Mono', monospace;
     font-size: ${isStory ? '20px' : '14px'};
     color: ${p.watermarkColor};
