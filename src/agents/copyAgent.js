@@ -115,14 +115,14 @@ Write high-impact social media copy in ENGLISH. The copy must:
 Return ONLY this JSON:
 {
   "headline": "Bold attention-grabbing headline that captures the core promise (max 55 chars)",
-  "headline_accent": "1-3 key words from the headline to highlight in teal — must be an exact substring of headline",
+  "headline_accent": "1-3 key words from the headline to highlight in teal — must be an exact substring of headline with the same capitalisation",
   "subheadline": "One line that expands the promise without repeating the headline (max 70 chars)",
   "stats": [
-    { "value": "24/7", "label": "Non-stop ops" },
-    { "value": "100x", "label": "Task output" },
-    { "value": "0",    "label": "Human errors" }
+    { "value": "XX%", "label": "Short benefit label" },
+    { "value": "NNx", "label": "Short benefit label" },
+    { "value": "NN",  "label": "Short benefit label" }
   ],
-  "description": "2-3 sentences expanding the core value of this system (max 120 chars total, plain prose)",
+  "description": "2-3 sentences expanding the core value of this system (max 280 chars total, plain prose)",
   "bullets": [],
   "cta": "Action-oriented CTA that creates urgency (max 35 chars)",
   "image_prompt": "Specific scene description for this post topic — describe what's in the image, not a style (max 80 chars)"
