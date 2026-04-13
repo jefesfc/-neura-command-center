@@ -1,13 +1,32 @@
 const axios = require('axios');
 const { query } = require('../db');
 
+const SYSTEM_CONTEXT = {
+  'sistema-01': 'sales pipeline, lead qualification, CRM dashboard, prospect funnel, sales team',
+  'sistema-02': 'sales conversion, deal closing, follow-up automation, client handshake, signed contract',
+  'sistema-03': 'business automation, workflow orchestration, connected systems, operations dashboard',
+  'neura':      'AI transformation, business intelligence, digital strategy, executive briefing',
+  'ai-agents':  'autonomous AI agents, robotic process automation, digital workforce, server room',
+  'crm':        'CRM interface, customer relationship management, contact records, sales analytics',
+  'rag':        'knowledge base, document retrieval, business knowledge AI, expert answering system',
+  'ai':         'AI implementation, machine learning dashboard, business technology, strategic planning',
+};
+
+const STYLE_SUFFIX = {
+  fotorrealista: 'photorealistic, modern office environment, professionals using technology, corporate setting, natural lighting, high detail photography',
+  abstract:      'abstract digital art, neural network visualization, dark background with teal and gold data streams, futuristic geometric forms, premium aesthetic',
+  hibrido:       'real office scene with holographic digital overlays, floating UI dashboards, data streams, blend of physical and digital worlds',
+};
+
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
-async function runImageAgent({ imagePrompt, aspectRatio = '1:1', postId }) {
+async function runImageAgent({ imagePrompt, aspectRatio = '1:1', system = '', imageStyle = 'fotorrealista', postId }) {
   const model = process.env.OPENROUTER_MODEL_IMAGE || 'google/gemini-3.1-flash-image-preview';
   const apiKey = process.env.OPENROUTER_API_KEY;
 
-  const enhancedPrompt = `${imagePrompt}. Style: cinematic, premium, dark navy tones (#0b1e2d), subtle teal accents, abstract technology background, no text, no logos, high quality.`;
+  const context = SYSTEM_CONTEXT[system] || 'business technology, AI solutions, digital transformation';
+  const styleSuffix = STYLE_SUFFIX[imageStyle] || STYLE_SUFFIX.abstract;
+  const enhancedPrompt = `${imagePrompt} — ${context} — dark navy tones (#0b1e2d), subtle teal accents, no text, no logos, ultra HD — ${styleSuffix}`;
 
   const payload = {
     model,
