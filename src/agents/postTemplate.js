@@ -22,7 +22,7 @@ const SYSTEM_BADGE = {
 
 const PALETTES = {
   navy: {
-    overlay: 'linear-gradient(150deg, rgba(7,18,28,0.94) 0%, rgba(11,30,45,0.65) 50%, rgba(7,18,28,0.92) 100%)',
+    overlay: 'linear-gradient(150deg, rgba(7,18,28,0.97) 0%, rgba(11,30,45,0.90) 50%, rgba(7,18,28,0.97) 100%)',
     fallbackBg: '#0b1e2d',
     accent: '#1fa2b8',
     accent2: '#c98a5a',
@@ -39,7 +39,7 @@ const PALETTES = {
     cornerColor: 'rgba(31,162,184,0.30)',
   },
   gold: {
-    overlay: 'linear-gradient(150deg, rgba(12,8,2,0.95) 0%, rgba(20,14,4,0.68) 50%, rgba(12,8,2,0.94) 100%)',
+    overlay: 'linear-gradient(150deg, rgba(12,8,2,0.97) 0%, rgba(20,14,4,0.90) 50%, rgba(12,8,2,0.97) 100%)',
     fallbackBg: '#130e04',
     accent: '#d4a040',
     accent2: '#f0d080',
@@ -56,7 +56,7 @@ const PALETTES = {
     cornerColor: 'rgba(212,160,64,0.32)',
   },
   grey: {
-    overlay: 'linear-gradient(150deg, rgba(6,6,12,0.96) 0%, rgba(10,10,18,0.66) 50%, rgba(6,6,12,0.94) 100%)',
+    overlay: 'linear-gradient(150deg, rgba(6,6,12,0.97) 0%, rgba(10,10,18,0.90) 50%, rgba(6,6,12,0.97) 100%)',
     fallbackBg: '#08080e',
     accent: '#8fa8be',
     accent2: '#1fa2b8',
@@ -111,9 +111,9 @@ function buildPostHTML({ headline, headline_accent, subheadline, stats, descript
   const statCells = statsArr.map((s, i) => {
     const valColor = i === 1 ? p.accent2 : p.accent;
     const border = i < statsArr.length - 1 ? `border-right: 1px solid rgba(255,255,255,0.08);` : '';
-    return `<div style="flex:1;padding:${isStory ? '14px 0' : '9px 0'};text-align:center;${border}">
-      <div style="font-family:'Cormorant Garamond',serif;font-size:${isStory ? '36px' : '22px'};font-weight:700;color:${valColor};line-height:1;">${esc(s.value)}</div>
-      <div style="font-size:${isStory ? '14px' : '9px'};color:rgba(255,255,255,0.4);margin-top:3px;">${esc(s.label)}</div>
+    return `<div style="flex:1;padding:${isStory ? '18px 0' : '14px 0'};text-align:center;${border}">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:${isStory ? '52px' : '36px'};font-weight:700;color:${valColor};line-height:1;">${esc(s.value)}</div>
+      <div style="font-size:${isStory ? '22px' : '16px'};color:rgba(255,255,255,0.65);margin-top:5px;letter-spacing:0.04em;">${esc(s.label)}</div>
     </div>`;
   }).join('');
 
@@ -124,7 +124,7 @@ function buildPostHTML({ headline, headline_accent, subheadline, stats, descript
         ${bulletsArr.map(b => `
           <div style="display:flex;align-items:center;gap:${isStory ? '16px' : '10px'};">
             <div style="width:${isStory ? '22px' : '14px'};height:2px;background:${p.accent};flex-shrink:0;"></div>
-            <span style="font-size:${isStory ? '18px' : '11px'};color:rgba(255,255,255,0.6);line-height:1.4;">${esc(b)}</span>
+            <span style="font-size:${isStory ? '28px' : '20px'};color:rgba(255,255,255,0.82);line-height:1.4;">${esc(b)}</span>
           </div>`).join('')}
       </div>`
     : '';
@@ -132,10 +132,10 @@ function buildPostHTML({ headline, headline_accent, subheadline, stats, descript
   // Font sizes
   const headlineFontSize = isStory
     ? (headline && headline.length > 40 ? '72px' : '84px')
-    : (headline && headline.length > 40 ? '44px' : '54px');
-  const subFontSize    = isStory ? '18px' : '11px';
-  const descFontSize   = isStory ? '20px' : '12px';
-  const ctaFontSize    = isStory ? '22px' : '13px';
+    : (headline && headline.length > 40 ? '48px' : '58px');
+  const subFontSize    = isStory ? '32px' : '18px';
+  const descFontSize   = isStory ? '36px' : '22px';
+  const ctaFontSize    = isStory ? '36px' : '22px';
 
   return `<!DOCTYPE html>
 <html>
@@ -195,7 +195,7 @@ function buildPostHTML({ headline, headline_accent, subheadline, stats, descript
   }
   .badge {
     font-family: 'DM Mono', monospace;
-    font-size: ${isStory ? '18px' : '12px'};
+    font-size: ${isStory ? '22px' : '15px'};
     font-weight: 500;
     color: ${p.badgeColor};
     letter-spacing: 0.10em;
@@ -238,7 +238,7 @@ function buildPostHTML({ headline, headline_accent, subheadline, stats, descript
   }
   .description {
     font-size: ${descFontSize};
-    color: rgba(255,255,255,0.55);
+    color: rgba(255,255,255,0.82);
     line-height: 1.6;
     margin-bottom: ${isStory ? '10px' : '6px'};
   }
@@ -269,7 +269,7 @@ function buildPostHTML({ headline, headline_accent, subheadline, stats, descript
   }
   .watermark {
     font-family: 'DM Mono', monospace;
-    font-size: ${isStory ? '16px' : '11px'};
+    font-size: ${isStory ? '20px' : '14px'};
     color: ${p.watermarkColor};
     letter-spacing: 0.10em;
   }
