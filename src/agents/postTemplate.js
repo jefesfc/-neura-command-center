@@ -290,11 +290,11 @@ function buildPostHTML({ headline, headline_accent, subheadline, stats, descript
       <div class="subheadline">${esc(subheadline)}</div>
       <h1 class="headline">${headlineHtml}</h1>
 
-      <div class="stats-row">${statCells}</div>
-
       <p class="description">${esc(description)}</p>
 
       ${bulletsHtml}
+
+      <div class="stats-row">${statCells}</div>
     </div>
 
     <div class="bottom-sep"></div>
