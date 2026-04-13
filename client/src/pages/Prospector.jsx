@@ -83,7 +83,7 @@ export default function Prospector() {
         business_type: businessType,
         city,
         query: `${businessType} in ${city}`,
-        triggered_at: data.triggeredAt,
+        triggered_at: data.triggeredAt ?? data.triggered_at ?? new Date().toISOString(),
         status: 'scraping',
         leads_count: 0,
       };
@@ -107,6 +107,7 @@ export default function Prospector() {
   }
 
   async function handleDeleteLead(leadId) {
+    if (!window.confirm('¿Eliminar este lead?')) return;
     try {
       await fetch(`/api/prospector/leads/${leadId}`, { method: 'DELETE' });
       setLeads(prev => prev.filter(l => l.id !== leadId));
