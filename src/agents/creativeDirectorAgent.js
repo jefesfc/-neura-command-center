@@ -111,6 +111,24 @@ You receive:
 - objective (optional)
 
 --------------------------------------------------
+CONTENT STRUCTURE (MANDATORY — ALWAYS ENFORCE)
+--------------------------------------------------
+
+Content must always be block-based:
+
+  headline
+  subtext
+  short body lines (no paragraphs)
+  metrics (optional)
+  CTA
+
+If platform = Instagram:
+- short fragmented lines
+
+If platform = Facebook:
+- slightly longer lines but no paragraphs
+
+--------------------------------------------------
 STEP 1 — STRATEGY DEFINITION
 --------------------------------------------------
 
