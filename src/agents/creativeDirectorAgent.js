@@ -1,5 +1,6 @@
 const OpenAI = require('openai');
 const { query } = require('../db');
+const { queryRAG } = require('./ragAgent');
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -259,6 +260,63 @@ If issues are found:
 Do NOT regenerate everything unless necessary.
 
 --------------------------------------------------
+RAG v4 INTEGRATION (MANDATORY)
+--------------------------------------------------
+
+You have access to a knowledge base called "NeuraSolutions RAG v4".
+
+This knowledge base contains:
+
+- services
+- offers
+- systems (A, B, C, etc.)
+- pricing logic
+- positioning
+- value propositions
+
+--------------------------------------------------
+HOW TO USE IT
+--------------------------------------------------
+
+Before defining the strategy:
+
+- Retrieve relevant context based on the user request
+- Extract ONLY useful and relevant information
+- Do NOT copy raw content
+- Do NOT overload the output
+
+--------------------------------------------------
+OBJECTIVE
+--------------------------------------------------
+
+Use the RAG to:
+
+- align content with real NeuraSolutions services
+- avoid generic marketing content
+- reinforce authority and specificity
+- connect posts to real use cases
+
+--------------------------------------------------
+STRICT RULES
+--------------------------------------------------
+
+- NEVER invent services or claims
+- ONLY use what exists in the knowledge base
+- If no relevant info is found → proceed without forcing it
+
+--------------------------------------------------
+OUTPUT USAGE
+--------------------------------------------------
+
+Incorporate the retrieved knowledge into:
+
+- content_angle
+- messaging direction
+- strategic decisions
+
+DO NOT expose raw RAG data in the final output.
+
+--------------------------------------------------
 OUTPUT FORMAT (STRICT JSON)
 --------------------------------------------------
 
@@ -290,12 +348,18 @@ Return ONLY:
 async function runCreativeDirectorAgent({ brief, system, platform = 'Instagram', goal = 'authority', layoutStyle = 'cinematic_dense', context = '', ctaType = 'auto', postId }) {
   const model = process.env.OPENAI_MODEL_CD || 'gpt-4o';
 
+  // Query RAG v4 for relevant NeuraSolutions knowledge
+  const ragContext = await queryRAG(`${brief} ${system} ${goal}`);
+  const ragBlock = ragContext
+    ? `\n\n--------------------------------------------------\nRAG v4 CONTEXT — NeuraSolutions Knowledge Base\n--------------------------------------------------\n${ragContext}\n--------------------------------------------------\nUse the above to align strategy with real services and positioning.`
+    : '';
+
   const userPrompt = `Brief: ${brief}
 System/Product: ${system}
 Platform: ${platform}
 Goal: ${goal}
 Visual Style: ${layoutStyle}
-CTA Type: ${ctaType}${context ? `\nAdditional Context: ${context}` : ''}
+CTA Type: ${ctaType}${context ? `\nAdditional Context: ${context}` : ''}${ragBlock}
 
 Define the strategy and generate precise instructions for each agent to create premium, high-impact content for this brief.`;
 
