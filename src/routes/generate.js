@@ -14,14 +14,19 @@ const jobs = new Map();
 
 // POST /api/generate — start generation job
 router.post('/', async (req, res) => {
-  const { brief, system, format = '1:1', tone = 'profesional', palette = 'navy', post_type = 'single', imageStyle = 'fotorrealista', platform = 'Instagram', goal = 'authority' } = req.body;
+  const {
+    brief, system,
+    format = '1:1', tone = 'auto', palette = 'navy', post_type = 'single',
+    imageStyle = 'fotorrealista', platform = 'Instagram', goal = 'authority',
+    layoutStyle = 'cinematic_dense', context = '', ctaType = 'auto',
+  } = req.body;
   if (!brief || !system) return res.status(400).json({ error: 'brief and system required' });
 
   const jobId = uuidv4();
   jobs.set(jobId, { status: 'pending', steps: {}, error: null, postId: null });
   res.json({ jobId });
 
-  runPipeline(jobId, { brief, system, format, tone, palette, post_type, imageStyle, platform, goal });
+  runPipeline(jobId, { brief, system, format, tone, palette, post_type, imageStyle, platform, goal, layoutStyle, context, ctaType });
 });
 
 // GET /api/generate/stream/:jobId — SSE stream
@@ -120,7 +125,7 @@ router.post('/step', async (req, res) => {
   }
 });
 
-async function runPipeline(jobId, { brief, system, format, tone, palette, post_type, imageStyle, platform, goal }) {
+async function runPipeline(jobId, { brief, system, format, tone, palette, post_type, imageStyle, platform, goal, layoutStyle, context, ctaType }) {
   const job = jobs.get(jobId);
   const setStep = (step, status, data = {}) => { job.steps[step] = { status, ...data }; };
 
@@ -137,7 +142,7 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
     setStep('creative-director', 'running');
     let cd = null;
     try {
-      cd = await runCreativeDirectorAgent({ brief, system, platform, goal, postId });
+      cd = await runCreativeDirectorAgent({ brief, system, platform, goal, layoutStyle, context, ctaType, postId });
       setStep('creative-director', 'done', { strategy: cd.strategy, content_angle: cd.strategy?.content_angle });
     } catch (err) {
       setStep('creative-director', 'skipped', { warning: err.message });

@@ -230,13 +230,15 @@ Return ONLY this structure:
   }
 }`;
 
-async function runCreativeDirectorAgent({ brief, system, platform = 'Instagram', goal = 'authority', postId }) {
+async function runCreativeDirectorAgent({ brief, system, platform = 'Instagram', goal = 'authority', layoutStyle = 'cinematic_dense', context = '', ctaType = 'auto', postId }) {
   const model = process.env.OPENAI_MODEL_CD || 'gpt-4o';
 
   const userPrompt = `Brief: ${brief}
 System/Product: ${system}
 Platform: ${platform}
 Goal: ${goal}
+Visual Style: ${layoutStyle}
+CTA Type: ${ctaType}${context ? `\nAdditional Context: ${context}` : ''}
 
 Define the strategy and generate precise instructions for each agent to create premium, high-impact content for this brief.`;
 
