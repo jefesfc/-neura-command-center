@@ -123,12 +123,14 @@ export default function PostGenerator() {
     es.onerror = () => { es.close(); setPhase('error'); };
   }
 
-  // Auto-render and save all slides/single post when generation completes
+  // Auto-render and save all slides/single post when generation completes.
+  // Depends on post?.id so the effect re-runs once the post fetch resolves —
+  // without it autoSaveAll closes over post=null and exits early.
   useEffect(() => {
-    if (phase !== 'done' || !postHtml) return;
+    if (phase !== 'done' || !postHtml || !post?.id) return;
     const timer = setTimeout(() => autoSaveAll(), 800);
     return () => clearTimeout(timer);
-  }, [phase, postHtml]);
+  }, [phase, postHtml, post?.id]);
 
   async function renderIframeToB64(html, sz) {
     return new Promise((resolve) => {
@@ -146,7 +148,7 @@ export default function PostGenerator() {
             useCORS: true, allowTaint: true, backgroundColor: '#0b1e2d',
           });
           resolve(canvas.toDataURL('image/png').split(',')[1]);
-        } catch { resolve(null); }
+        } catch (err) { console.error('[renderIframeToB64]', err); resolve(null); }
         finally { document.body.removeChild(iframe); }
       };
       iframe.srcdoc = html;
