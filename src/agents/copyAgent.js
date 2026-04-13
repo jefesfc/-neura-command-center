@@ -191,6 +191,27 @@ Always align with:
 - scalability
 
 --------------------------------------------------
+OUTPUT FORMAT (MANDATORY)
+--------------------------------------------------
+
+Never write paragraphs.
+
+Use this structure:
+
+- short lines (1 sentence max)
+- or bullet-style lines
+
+Each line must be visually independent.
+
+Bad:
+"Long paragraph text explaining things..."
+
+Good:
+"Your team is wasting time.
+Searching for answers.
+Across disconnected tools."
+
+--------------------------------------------------
 FINAL RULE
 --------------------------------------------------
 
