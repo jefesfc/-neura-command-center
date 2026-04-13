@@ -3,6 +3,70 @@ const { query } = require('../db');
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+const LAYOUT_MASTER = `NEURA CONTENT SYSTEM — LAYOUT MASTER
+Version: v1.0
+Style: Structured Dense Premium / Cinematic Conversion
+
+CORE DESIGN PHILOSOPHY:
+This is NOT minimal design.
+This is: High-density structured content / Cinematic visual presentation / Conversion-oriented layout / Premium aesthetic.
+The goal: Communicate value in <3 seconds while maintaining a luxury brand perception.
+
+PRIMARY LAYOUT TYPE: CINEMATIC DENSE
+Structure: Full Background Image (business / AI / dashboard context) → Dark Overlay (gradient or opacity layer) → Floating Text Block → CTA + Metrics
+
+VISUAL RULES:
+- Always use full-width background image
+- Image must feel real (business context, not abstract only)
+- Apply dark overlay for contrast
+- Avoid bright or washed backgrounds
+- Use depth, shadows, cinematic lighting
+
+TEXT STRUCTURE (MANDATORY ORDER):
+1. Hook (small, uppercase, subtle) — e.g. "YOUR CRM DOESN'T CLOSE DEALS."
+2. Headline (main focus, large typography) — e.g. "Your system does."
+3. Subtext (1–2 lines max) — explains value clearly
+4. Bullet Points (3–5 max) — short, outcome-driven, no fluff
+5. Metrics / Proof — e.g. "2–5x faster execution", "-60% manual work"
+6. CTA (clear and direct) — e.g. "Book a system strategy call →"
+
+TYPOGRAPHY RULES:
+- Headline: Serif or premium style
+- Body: Clean sans-serif
+- High contrast (white / gold on dark)
+- Clear hierarchy (no clutter)
+- No long paragraphs
+
+COLOR SYSTEM:
+- Base: Dark / navy / black
+- Accent: Gold / beige (premium) or Teal (AI / tech)
+- Max 2–3 colors per design. No random palettes.
+
+SPACING RULES:
+- Generous padding
+- No cramped elements
+- Each section must breathe
+- Visual balance is critical
+
+FORBIDDEN:
+- No text baked into generated images
+- No Canva-style clutter
+- No generic icons
+- No overuse of colors
+- No weak headlines
+- No empty meaningless space
+
+ALTERNATIVE LAYOUT TYPE: STRUCTURED CAROUSEL
+Use when: Educational content or multi-step explanation.
+Structure: Image + text separated, one idea per slide, clear progression.
+
+SYSTEM LOGIC:
+Creative Director decides: layout_style = "cinematic_dense" OR "structured_carousel"
+Layout Agent must: follow hierarchy strictly, ensure readability, maintain premium composition, align with Neura brand.
+
+FINAL GOAL:
+This layout must feel like: High-ticket offer / Agency-level creative / Conversion-focused asset / Not social media noise.`;
+
 const CD_SYSTEM_PROMPT = `You are the Creative Director and Orchestrator of a multi-agent AI content creation system for NeuraSolutions.
 
 You are NOT a content generator.
@@ -14,7 +78,11 @@ Your role is to:
 - validate outputs
 - ensure premium quality
 
-You operate using the "NEURA CONTENT — LAYOUT MASTER" as the source of truth.
+You operate using the NEURA CONTENT LAYOUT MASTER below as your source of truth. You MUST enforce every rule in it.
+
+=== NEURA CONTENT — LAYOUT MASTER ===
+${LAYOUT_MASTER}
+======================================
 
 --------------------------------------------------
 SYSTEM CONTEXT
