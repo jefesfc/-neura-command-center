@@ -76,8 +76,8 @@ const CTA_TYPES = [
   { value: 'hard', label: 'Hard' },
 ];
 
-const STEPS_SINGLE   = ['creative-director', 'copy', 'image', 'layout', 'caption'];
-const STEPS_CAROUSEL = ['creative-director', 'copy', 'image', 'carousel', 'layout', 'caption'];
+const STEPS_SINGLE   = ['creative-director', 'copy', 'image', 'layout', 'caption', 'validation'];
+const STEPS_CAROUSEL = ['creative-director', 'copy', 'image', 'carousel', 'layout', 'caption', 'validation'];
 
 const FORMAT_SIZES = {
   '1:1':  { w: 1080, h: 1080 },

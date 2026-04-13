@@ -3,11 +3,12 @@ import { Check, Loader2, AlertCircle, SkipForward } from 'lucide-react';
 
 const STEP_LABELS = {
   'creative-director': 'Creative Director — Strategy',
-  copy:    'Copy Agent — GPT-4o',
-  image:   'Image Agent — Gemini',
-  carousel:'Carousel Agent — GPT-4o',
-  layout:  'Layout Agent — Render',
-  caption: 'Caption Agent — GPT-4o mini',
+  copy:       'Copy Agent — GPT-4o',
+  image:      'Image Agent — Gemini',
+  carousel:   'Carousel Agent — GPT-4o',
+  layout:     'Layout Agent — Render',
+  caption:    'Caption Agent — GPT-4o mini',
+  validation: 'Creative Director — Validation',
 };
 
 export default function ProgressStep({ step, state }) {

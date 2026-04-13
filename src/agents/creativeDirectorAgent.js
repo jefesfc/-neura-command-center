@@ -267,4 +267,83 @@ Define the strategy and generate precise instructions for each agent to create p
   return result;
 }
 
-module.exports = { runCreativeDirectorAgent };
+// ─────────────────────────────────────────────────────────────────────────────
+// VALIDATION MODE — CD reviews copy + caption quality after all agents run
+// ─────────────────────────────────────────────────────────────────────────────
+
+const VALIDATION_SYSTEM_PROMPT = `You are the Creative Director validating the outputs of a multi-agent AI content system for NeuraSolutions.
+
+Your role: review the Copy Agent and Caption Agent outputs against the original strategy.
+
+You MUST check:
+1. Does the copy communicate the core value clearly in under 3 seconds?
+2. Is the headline strong and specific — no generic phrases?
+3. Is the copy aligned with the strategy content_angle?
+4. Is the CTA direct and clear?
+5. Does the caption extend the message (not repeat)?
+6. Is the overall tone premium and B2B focused?
+
+If issues exist, identify ONLY ONE failing agent — the one with the biggest problem.
+
+IMPORTANT: Be strict. Generic or weak copy must be flagged.
+
+Return ONLY this JSON:
+{
+  "final_status": "approved",
+  "issues_found": [],
+  "failing_agent": null,
+  "revision_note": ""
+}
+
+Or if revision needed:
+{
+  "final_status": "needs_revision",
+  "issues_found": ["specific issue description"],
+  "failing_agent": "copy",
+  "revision_note": "Specific instruction for the agent to improve the output"
+}
+
+failing_agent must be: "copy", "caption", or null.`;
+
+async function runCreativeDirectorValidation({ strategy, copyOutput, captionOutput, postId }) {
+  const model = process.env.OPENAI_MODEL_CD || 'gpt-4o';
+
+  const userPrompt = `STRATEGY:
+${JSON.stringify(strategy || {}, null, 2)}
+
+COPY OUTPUT:
+Headline: ${copyOutput.headline || ''}
+Subheadline: ${copyOutput.subheadline || ''}
+Description: ${copyOutput.description || ''}
+Bullets: ${(copyOutput.bullets || []).join(' | ')}
+CTA: ${copyOutput.cta || ''}
+
+CAPTION OUTPUT:
+${captionOutput.caption || ''}
+
+Validate both outputs against the strategy. Is the quality premium and on-brand?`;
+
+  const response = await client.chat.completions.create({
+    model,
+    messages: [
+      { role: 'system', content: VALIDATION_SYSTEM_PROMPT },
+      { role: 'user', content: userPrompt },
+    ],
+    response_format: { type: 'json_object' },
+    temperature: 0.3,
+  });
+
+  const usage = response.usage;
+  const result = JSON.parse(response.choices[0].message.content);
+
+  const costUsd = (usage.prompt_tokens * 2.5 + usage.completion_tokens * 10) / 1_000_000;
+  await query(
+    `INSERT INTO token_usage (provider, model, feature, tokens_in, tokens_out, cost_usd, post_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+    ['openai', model, 'validation', usage.prompt_tokens, usage.completion_tokens, costUsd, postId || null]
+  );
+
+  return result;
+}
+
+module.exports = { runCreativeDirectorAgent, runCreativeDirectorValidation };

@@ -7,7 +7,7 @@ const { runImageAgent } = require('../agents/imageAgent');
 const { runLayoutAgent } = require('../agents/layoutAgent');
 const { runCaptionAgent } = require('../agents/captionAgent');
 const { runCarouselAgent } = require('../agents/carouselAgent');
-const { runCreativeDirectorAgent } = require('../agents/creativeDirectorAgent');
+const { runCreativeDirectorAgent, runCreativeDirectorValidation } = require('../agents/creativeDirectorAgent');
 
 // In-memory job store
 const jobs = new Map();
@@ -212,22 +212,121 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
       setStep('layout', 'done', { html: layoutResult.html });
     }
 
-    // Step 4: Caption
+    // ── helpers ──────────────────────────────────────────────────────────────
+    function assembleCaption(captionData) {
+      const obj = captionData.caption || {};
+      const text = typeof obj === 'string'
+        ? obj
+        : [obj.hook, obj.body, obj.soft_cta, obj.hard_cta].filter(Boolean).join('\n\n');
+      const tags = Array.isArray(obj.hashtags)
+        ? obj.hashtags.join(' ')
+        : (captionData.hashtags || '');
+      return { fullCaption: text, hashtagsStr: tags };
+    }
+
+    // ── Step 4: Caption ───────────────────────────────────────────────────────
     setStep('caption', 'running');
     const captionData = await runCaptionAgent({
       headline: copy.headline, bullets: copy.bullets, cta: copy.cta,
       system, brief, postId,
     });
-    const captionObj = captionData.caption || {};
-    const fullCaption = typeof captionObj === 'string'
-      ? captionObj
-      : [captionObj.hook, captionObj.body, captionObj.soft_cta, captionObj.hard_cta].filter(Boolean).join('\n\n');
-    const hashtagsStr = Array.isArray(captionObj.hashtags)
-      ? captionObj.hashtags.join(' ')
-      : (captionData.hashtags || '');
+    let { fullCaption, hashtagsStr } = assembleCaption(captionData);
     await query('UPDATE posts SET caption=$1, hashtags=$2, status=$3 WHERE id=$4',
       [fullCaption, hashtagsStr, 'ready', postId]);
     setStep('caption', 'done', { caption: fullCaption, hashtags: hashtagsStr });
+
+    // ── Step 5: Validation — CD re-evaluates copy + caption quality ───────────
+    setStep('validation', 'running');
+    try {
+      const validation = await runCreativeDirectorValidation({
+        strategy: cd?.strategy,
+        copyOutput: copy,
+        captionOutput: { caption: fullCaption },
+        postId,
+      });
+
+      if (validation.final_status === 'needs_revision' && validation.failing_agent) {
+        const note = validation.revision_note || '';
+
+        if (validation.failing_agent === 'copy') {
+          // Regenerate copy
+          setStep('copy', 'running');
+          const fixedCopy = await runCopyAgent({
+            brief: `${brief}\n\nREVISION: ${note}`, system, tone, postId,
+            cdInstruction: cd?.instructions?.copy_agent,
+          });
+          await query('UPDATE posts SET headline=$1, bullets=$2, cta=$3 WHERE id=$4',
+            [fixedCopy.headline, JSON.stringify(fixedCopy.bullets), fixedCopy.cta, postId]);
+          setStep('copy', 'done', { headline: fixedCopy.headline });
+
+          // Re-render layout with fixed copy
+          setStep('layout', 'running');
+          if (post_type === 'carousel') {
+            const fixedCarousel = await runCarouselAgent({
+              headline: fixedCopy.headline, bullets: fixedCopy.bullets,
+              cta: fixedCopy.cta, system, brief, postId,
+            });
+            const fixedLayout = await runLayoutAgent({
+              headline: fixedCopy.headline, headline_accent: fixedCopy.headline_accent,
+              subheadline: fixedCopy.subheadline, stats: fixedCopy.stats,
+              description: fixedCopy.description, bullets: fixedCopy.bullets,
+              cta: fixedCopy.cta, system, imageB64, format, palette,
+              postType: 'carousel', carouselSlides: fixedCarousel,
+            });
+            const slidesForDb = fixedLayout.slides.map(s => ({
+              index: s.index, type: s.type, html: s.html,
+              title: s.title || s.point_title || s.cta_headline || '',
+            }));
+            await query('UPDATE posts SET post_html=$1, slides=$2 WHERE id=$3',
+              [fixedLayout.html, JSON.stringify(slidesForDb), postId]);
+            setStep('layout', 'done', { html: fixedLayout.html, slides: fixedLayout.slides });
+          } else {
+            const fixedLayout = await runLayoutAgent({
+              headline: fixedCopy.headline, headline_accent: fixedCopy.headline_accent,
+              subheadline: fixedCopy.subheadline, stats: fixedCopy.stats,
+              description: fixedCopy.description, bullets: fixedCopy.bullets,
+              cta: fixedCopy.cta, system, imageB64, format, palette, postType: 'single',
+            });
+            await query('UPDATE posts SET post_html=$1 WHERE id=$2', [fixedLayout.html, postId]);
+            setStep('layout', 'done', { html: fixedLayout.html });
+          }
+
+          // Regenerate caption with fixed copy
+          setStep('caption', 'running');
+          const fixedCaptionData = await runCaptionAgent({
+            headline: fixedCopy.headline, bullets: fixedCopy.bullets,
+            cta: fixedCopy.cta, system, brief, postId,
+          });
+          const fixed = assembleCaption(fixedCaptionData);
+          fullCaption  = fixed.fullCaption;
+          hashtagsStr  = fixed.hashtagsStr;
+          await query('UPDATE posts SET caption=$1, hashtags=$2 WHERE id=$3',
+            [fullCaption, hashtagsStr, postId]);
+          setStep('caption', 'done', { caption: fullCaption });
+
+        } else if (validation.failing_agent === 'caption') {
+          // Regenerate caption only
+          setStep('caption', 'running');
+          const fixedCaptionData = await runCaptionAgent({
+            headline: copy.headline, bullets: copy.bullets, cta: copy.cta,
+            system, brief: `${brief}\n\nREVISION: ${note}`, postId,
+          });
+          const fixed = assembleCaption(fixedCaptionData);
+          fullCaption  = fixed.fullCaption;
+          hashtagsStr  = fixed.hashtagsStr;
+          await query('UPDATE posts SET caption=$1, hashtags=$2 WHERE id=$3',
+            [fullCaption, hashtagsStr, postId]);
+          setStep('caption', 'done', { caption: fullCaption });
+        }
+      }
+
+      setStep('validation', 'done', {
+        final_status: validation.final_status,
+        issues: validation.issues_found,
+      });
+    } catch (err) {
+      setStep('validation', 'skipped', { warning: err.message });
+    }
 
     job.status = 'done';
   } catch (err) {
