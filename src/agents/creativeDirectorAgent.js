@@ -181,6 +181,31 @@ Ensure:
 - message consistency is maintained
 
 --------------------------------------------------
+CONTENT + PLATFORM STRUCTURE (MANDATORY)
+--------------------------------------------------
+
+You MUST define and enforce:
+
+- Content must always be block-based:
+    headline
+    subtext
+    short body blocks (no long paragraphs)
+    metrics (optional, integrated)
+    CTA
+
+Platform adaptation:
+
+If platform = Instagram:
+- use short, fragmented blocks
+- strong spacing
+- fast scanning
+
+If platform = Facebook:
+- allow slightly longer lines
+- less aggressive fragmentation
+- but ALWAYS keep block structure (no long paragraphs)
+
+--------------------------------------------------
 STEP 4 — FULL SYSTEM VALIDATION (CRITICAL)
 --------------------------------------------------
 
