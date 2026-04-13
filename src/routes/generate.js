@@ -102,9 +102,16 @@ router.post('/step', async (req, res) => {
         headline: post.headline, bullets: post.bullets, cta: post.cta,
         system: post.system, brief: post.brief, postId,
       });
+      const captionObj = caption.caption || {};
+      const fullCaption = typeof captionObj === 'string'
+        ? captionObj
+        : [captionObj.hook, captionObj.body, captionObj.soft_cta, captionObj.hard_cta].filter(Boolean).join('\n\n');
+      const hashtagsStr = Array.isArray(captionObj.hashtags)
+        ? captionObj.hashtags.join(' ')
+        : (caption.hashtags || '');
       await query('UPDATE posts SET caption=$1, hashtags=$2, updated_at=NOW() WHERE id=$3',
-        [caption.caption, caption.hashtags, postId]);
-      return res.json({ ok: true, data: caption });
+        [fullCaption, hashtagsStr, postId]);
+      return res.json({ ok: true, data: { caption: fullCaption, hashtags: hashtagsStr } });
     }
 
     res.status(400).json({ error: 'Unknown step' });
@@ -206,9 +213,16 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
       headline: copy.headline, bullets: copy.bullets, cta: copy.cta,
       system, brief, postId,
     });
+    const captionObj = captionData.caption || {};
+    const fullCaption = typeof captionObj === 'string'
+      ? captionObj
+      : [captionObj.hook, captionObj.body, captionObj.soft_cta, captionObj.hard_cta].filter(Boolean).join('\n\n');
+    const hashtagsStr = Array.isArray(captionObj.hashtags)
+      ? captionObj.hashtags.join(' ')
+      : (captionData.hashtags || '');
     await query('UPDATE posts SET caption=$1, hashtags=$2, status=$3 WHERE id=$4',
-      [captionData.caption, captionData.hashtags, 'ready', postId]);
-    setStep('caption', 'done', { caption: captionData.caption, hashtags: captionData.hashtags });
+      [fullCaption, hashtagsStr, 'ready', postId]);
+    setStep('caption', 'done', { caption: fullCaption, hashtags: hashtagsStr });
 
     job.status = 'done';
   } catch (err) {
