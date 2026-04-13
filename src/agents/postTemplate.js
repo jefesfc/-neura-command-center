@@ -74,7 +74,7 @@ const PALETTES = {
   },
 };
 
-function buildPostHTML({ headline, bullets, cta, system, imageB64, format = '1:1', palette = 'navy' }) {
+function buildPostHTML({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format = '1:1', palette = 'navy' }) {
   const isStory = format === '9:16';
   const width = 1080;
   const height = isStory ? 1920 : 1080;
@@ -89,21 +89,49 @@ function buildPostHTML({ headline, bullets, cta, system, imageB64, format = '1:1
     ? `<img src="data:image/png;base64,${LOGO_B64}" alt="Neura" class="logo-img" />`
     : `<span class="logo-text">NEURA</span>`;
 
-  const bulletItems = (bullets || [])
-    .map((b, i) => `
-    <li class="bullet-item">
-      <span class="bullet-num">0${i + 1}</span>
-      <div class="bullet-content">
-        <div class="bullet-line"></div>
-        <span class="bullet-text">${b}</span>
-      </div>
-    </li>`)
-    .join('');
+  // Headline with accent color
+  let headlineHtml = headline || '';
+  if (headline_accent && headline && headline.includes(headline_accent)) {
+    const idx = headline.indexOf(headline_accent);
+    const before = headline.slice(0, idx);
+    const after = headline.slice(idx + headline_accent.length);
+    headlineHtml = `${before}<span style="color:${p.accent}">${headline_accent}</span>${after}`;
+  }
 
-  const headlineFontSize = isStory ? '92px' : (headline && headline.length > 40 ? '68px' : '78px');
-  const bulletFontSize = isStory ? '34px' : '26px';
-  const numFontSize = isStory ? '20px' : '16px';
-  const ctaFontSize = isStory ? '30px' : '24px';
+  // Stats row
+  const statsArr = Array.isArray(stats) && stats.length > 0 ? stats : [
+    { value: '24/7', label: 'Non-stop ops' },
+    { value: '100x', label: 'Task output' },
+    { value: '0',    label: 'Human errors' },
+  ];
+  const statCells = statsArr.map((s, i) => {
+    const valColor = i === 1 ? p.accent2 : p.accent;
+    const border = i < statsArr.length - 1 ? `border-right: 1px solid rgba(255,255,255,0.08);` : '';
+    return `<div style="flex:1;padding:${isStory ? '14px 0' : '9px 0'};text-align:center;${border}">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:${isStory ? '36px' : '22px'};font-weight:700;color:${valColor};line-height:1;">${s.value}</div>
+      <div style="font-size:${isStory ? '14px' : '9px'};color:rgba(255,255,255,0.4);margin-top:3px;">${s.label}</div>
+    </div>`;
+  }).join('');
+
+  // Optional bullets
+  const bulletsArr = Array.isArray(bullets) ? bullets : [];
+  const bulletsHtml = bulletsArr.length > 0
+    ? `<div style="display:flex;flex-direction:column;gap:${isStory ? '16px' : '10px'};margin-top:${isStory ? '28px' : '16px'};">
+        ${bulletsArr.map(b => `
+          <div style="display:flex;align-items:center;gap:${isStory ? '16px' : '10px'};">
+            <div style="width:${isStory ? '22px' : '14px'};height:2px;background:${p.accent};flex-shrink:0;"></div>
+            <span style="font-size:${isStory ? '18px' : '11px'};color:rgba(255,255,255,0.6);line-height:1.4;">${b}</span>
+          </div>`).join('')}
+      </div>`
+    : '';
+
+  // Font sizes
+  const headlineFontSize = isStory
+    ? (headline && headline.length > 40 ? '72px' : '84px')
+    : (headline && headline.length > 40 ? '44px' : '54px');
+  const subFontSize    = isStory ? '18px' : '11px';
+  const descFontSize   = isStory ? '20px' : '12px';
+  const ctaFontSize    = isStory ? '22px' : '13px';
 
   return `<!DOCTYPE html>
 <html>
@@ -114,7 +142,6 @@ function buildPostHTML({ headline, bullets, cta, system, imageB64, format = '1:1
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { width: ${width}px; height: ${height}px; overflow: hidden; }
-
   .post {
     position: relative;
     width: ${width}px;
@@ -122,202 +149,123 @@ function buildPostHTML({ headline, bullets, cta, system, imageB64, format = '1:1
     ${bgStyle}
     font-family: 'Inter', sans-serif;
   }
-
-  /* Overlay */
   .overlay {
     position: absolute;
     inset: 0;
     background: ${p.overlay};
   }
-
-  /* Corner decoration top-left */
-  .corner-tl {
+  .left-bar {
     position: absolute;
-    top: ${isStory ? '52px' : '38px'};
-    left: ${isStory ? '52px' : '38px'};
-    width: ${isStory ? '48px' : '36px'};
-    height: ${isStory ? '48px' : '36px'};
-    border-top: 2px solid ${p.cornerColor};
-    border-left: 2px solid ${p.cornerColor};
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg, ${p.accent} 0%, transparent 100%);
     z-index: 5;
   }
-
-  /* Corner decoration bottom-right */
-  .corner-br {
-    position: absolute;
-    bottom: ${isStory ? '52px' : '38px'};
-    right: ${isStory ? '52px' : '38px'};
-    width: ${isStory ? '48px' : '36px'};
-    height: ${isStory ? '48px' : '36px'};
-    border-bottom: 2px solid ${p.cornerColor};
-    border-right: 2px solid ${p.cornerColor};
-    z-index: 5;
-  }
-
   .content {
     position: relative;
     z-index: 10;
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding: ${isStory ? '88px 80px' : '64px 72px'};
+    padding: ${isStory ? '72px 80px 72px 86px' : '52px 64px 52px 70px'};
   }
-
-  /* TOP BAR */
   .top-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: ${isStory ? '18px' : '12px'};
+    margin-bottom: ${isStory ? '12px' : '8px'};
   }
-
   .logo-img {
-    height: ${isStory ? '50px' : '38px'};
+    height: ${isStory ? '50px' : '36px'};
     width: auto;
     object-fit: contain;
   }
-
   .logo-text {
     font-family: 'Cormorant Garamond', serif;
-    font-size: ${isStory ? '46px' : '36px'};
+    font-size: ${isStory ? '42px' : '32px'};
     font-weight: 700;
     letter-spacing: 0.14em;
     color: #ffffff;
   }
-
   .badge {
     font-family: 'DM Mono', monospace;
-    font-size: ${isStory ? '20px' : '15px'};
+    font-size: ${isStory ? '18px' : '12px'};
     font-weight: 500;
     color: ${p.badgeColor};
     letter-spacing: 0.10em;
     text-transform: uppercase;
     border: 1.5px solid ${p.badgeBorder};
-    padding: ${isStory ? '10px 22px' : '7px 16px'};
+    padding: ${isStory ? '10px 22px' : '6px 14px'};
     border-radius: 3px;
+    background: rgba(0,0,0,0.25);
   }
-
-  /* SEPARATOR */
-  .top-sep {
-    width: 100%;
-    height: 1px;
-    background: ${p.separatorColor};
-    margin-bottom: ${isStory ? '80px' : '44px'};
-  }
-
-  /* MAIN */
   .main {
     flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    padding-top: ${isStory ? '20px' : '12px'};
   }
-
-  /* Accent line */
-  .accent-line {
-    width: ${isStory ? '72px' : '56px'};
-    height: 4px;
-    background: ${p.lineColor};
-    border-radius: 2px;
-    margin-bottom: ${isStory ? '36px' : '24px'};
+  .subheadline {
+    font-family: 'DM Mono', monospace;
+    font-size: ${subFontSize};
+    color: ${p.accent};
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: ${isStory ? '22px' : '12px'};
   }
-
   .headline {
     font-family: 'Cormorant Garamond', serif;
     font-size: ${headlineFontSize};
     font-weight: 700;
-    line-height: 1.08;
+    line-height: 1.1;
     color: ${p.text};
-    margin-bottom: ${isStory ? '72px' : '44px'};
+    margin-bottom: ${isStory ? '36px' : '22px'};
     letter-spacing: -0.02em;
   }
-
-  /* BULLETS */
-  .bullets {
-    list-style: none;
+  .stats-row {
     display: flex;
-    flex-direction: column;
-    gap: ${isStory ? '36px' : '22px'};
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: ${isStory ? '36px' : '22px'};
   }
-
-  .bullet-item {
-    display: flex;
-    align-items: flex-start;
-    gap: ${isStory ? '28px' : '20px'};
+  .description {
+    font-size: ${descFontSize};
+    color: rgba(255,255,255,0.55);
+    line-height: 1.6;
+    margin-bottom: ${isStory ? '10px' : '6px'};
   }
-
-  .bullet-num {
-    font-family: 'DM Mono', monospace;
-    font-size: ${numFontSize};
-    font-weight: 500;
-    color: ${p.numColor};
-    letter-spacing: 0.08em;
-    flex-shrink: 0;
-    margin-top: ${isStory ? '8px' : '5px'};
-    opacity: 0.85;
-  }
-
-  .bullet-content {
-    display: flex;
-    flex-direction: column;
-    gap: ${isStory ? '10px' : '7px'};
-  }
-
-  .bullet-line {
-    width: ${isStory ? '40px' : '30px'};
-    height: 1.5px;
-    background: ${p.lineColor};
-    opacity: 0.5;
-  }
-
-  .bullet-text {
-    font-family: 'Inter', sans-serif;
-    font-size: ${bulletFontSize};
-    font-weight: 400;
-    color: ${p.textMuted};
-    line-height: 1.45;
-    letter-spacing: 0.005em;
-  }
-
-  /* BOTTOM */
   .bottom-sep {
     width: 100%;
     height: 1px;
     background: ${p.separatorColor};
-    margin-top: ${isStory ? '80px' : '44px'};
-    margin-bottom: ${isStory ? '36px' : '24px'};
+    margin-top: auto;
+    margin-bottom: ${isStory ? '32px' : '20px'};
   }
-
   .bottom-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
-
-  .cta-group {
-    display: flex;
-    align-items: center;
-    gap: ${isStory ? '20px' : '14px'};
+  .cta-btn {
+    background: ${p.accent};
+    padding: ${isStory ? '16px 36px' : '10px 22px'};
+    border-radius: 2px;
   }
-
-  .cta {
+  .cta-text {
     font-family: 'Inter', sans-serif;
     font-size: ${ctaFontSize};
-    font-weight: 600;
-    color: ${p.ctaColor};
-    letter-spacing: 0.02em;
+    font-weight: 700;
+    color: #070c12;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
-
-  .cta-arrow {
-    font-size: ${ctaFontSize};
-    color: ${p.arrowColor};
-    font-weight: 300;
-    line-height: 1;
-  }
-
   .watermark {
     font-family: 'DM Mono', monospace;
-    font-size: ${isStory ? '18px' : '14px'};
+    font-size: ${isStory ? '16px' : '11px'};
     color: ${p.watermarkColor};
     letter-spacing: 0.10em;
   }
@@ -326,27 +274,29 @@ function buildPostHTML({ headline, bullets, cta, system, imageB64, format = '1:1
 <body>
 <div class="post">
   <div class="overlay"></div>
-  <div class="corner-tl"></div>
-  <div class="corner-br"></div>
+  <div class="left-bar"></div>
   <div class="content">
 
     <div class="top-bar">
-      <div class="logo-wrap">${logoHtml}</div>
+      <div>${logoHtml}</div>
       <div class="badge">${badge}</div>
     </div>
-    <div class="top-sep"></div>
 
     <div class="main">
-      <div class="accent-line"></div>
-      <h1 class="headline">${headline}</h1>
-      <ul class="bullets">${bulletItems}</ul>
+      <div class="subheadline">${subheadline || ''}</div>
+      <h1 class="headline">${headlineHtml}</h1>
+
+      <div class="stats-row">${statCells}</div>
+
+      <p class="description">${description || ''}</p>
+
+      ${bulletsHtml}
     </div>
 
     <div class="bottom-sep"></div>
     <div class="bottom-bar">
-      <div class="cta-group">
-        <span class="cta">${cta}</span>
-        <span class="cta-arrow">→</span>
+      <div class="cta-btn">
+        <span class="cta-text">${cta} →</span>
       </div>
       <span class="watermark">neurasolutions.cloud</span>
     </div>
