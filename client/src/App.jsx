@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import PostGenerator from './pages/PostGenerator';
 import ContentCalendar from './pages/ContentCalendar';
 import PostLibrary from './pages/PostLibrary';
+import Prospector from './pages/Prospector';
 import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="studio/generator" element={<PostGenerator />} />
         <Route path="studio/calendar" element={<ContentCalendar />} />
         <Route path="library" element={<PostLibrary />} />
+        <Route path="prospector" element={<Prospector />} />
         <Route path="analytics" element={<Analytics />} />
         <Route path="settings" element={<Settings />} />
       </Route>

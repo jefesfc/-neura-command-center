@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Wand2, CalendarDays,
-  Images, BarChart3, Settings, ChevronRight
+  Images, BarChart3, Settings, ChevronRight, Search
 } from 'lucide-react';
 
 const nav = [
@@ -15,6 +15,7 @@ const nav = [
     ],
   },
   { label: 'Post Library', to: '/library', icon: Images },
+  { label: 'Prospector', to: '/prospector', icon: Search },
   { label: 'Analytics', to: '/analytics', icon: BarChart3 },
   { label: 'Settings', to: '/settings', icon: Settings },
 ];
