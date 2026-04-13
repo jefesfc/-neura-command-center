@@ -13,14 +13,14 @@ const jobs = new Map();
 
 // POST /api/generate — start generation job
 router.post('/', async (req, res) => {
-  const { brief, system, format = '1:1', tone = 'profesional', palette = 'navy', post_type = 'single' } = req.body;
+  const { brief, system, format = '1:1', tone = 'profesional', palette = 'navy', post_type = 'single', imageStyle = 'fotorrealista' } = req.body;
   if (!brief || !system) return res.status(400).json({ error: 'brief and system required' });
 
   const jobId = uuidv4();
   jobs.set(jobId, { status: 'pending', steps: {}, error: null, postId: null });
   res.json({ jobId });
 
-  runPipeline(jobId, { brief, system, format, tone, palette, post_type });
+  runPipeline(jobId, { brief, system, format, tone, palette, post_type, imageStyle });
 });
 
 // GET /api/generate/stream/:jobId — SSE stream
@@ -80,7 +80,7 @@ router.post('/step', async (req, res) => {
 
     if (step === 'image') {
       const prompt = imagePrompt || `${post.headline} ${post.brief}`;
-      const imageB64 = await runImageAgent({ imagePrompt: prompt, aspectRatio: post.format, postId });
+      const imageB64 = await runImageAgent({ imagePrompt: prompt, aspectRatio: post.format, system: post.system, postId });
       await query('UPDATE posts SET image_b64=$1, updated_at=NOW() WHERE id=$2', [imageB64, postId]);
       return res.json({ ok: true, imageB64 });
     }
@@ -112,7 +112,7 @@ router.post('/step', async (req, res) => {
   }
 });
 
-async function runPipeline(jobId, { brief, system, format, tone, palette, post_type }) {
+async function runPipeline(jobId, { brief, system, format, tone, palette, post_type, imageStyle }) {
   const job = jobs.get(jobId);
   const setStep = (step, status, data = {}) => { job.steps[step] = { status, ...data }; };
 
@@ -136,7 +136,7 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
     setStep('image', 'running');
     let imageB64 = null;
     try {
-      imageB64 = await runImageAgent({ imagePrompt: copy.image_prompt, aspectRatio: format, postId });
+      imageB64 = await runImageAgent({ imagePrompt: copy.image_prompt, aspectRatio: format, system, imageStyle, postId });
       await query('UPDATE posts SET image_b64=$1 WHERE id=$2', [imageB64, postId]);
       setStep('image', 'done');
     } catch (err) {
@@ -157,7 +157,13 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
       setStep('carousel', 'done');
 
       layoutResult = await runLayoutAgent({
-        headline: copy.headline, bullets: copy.bullets, cta: copy.cta,
+        headline: copy.headline,
+        headline_accent: copy.headline_accent,
+        subheadline: copy.subheadline,
+        stats: copy.stats,
+        description: copy.description,
+        bullets: copy.bullets,
+        cta: copy.cta,
         system, imageB64, format, palette, postType: 'carousel', carouselSlides,
       });
 
@@ -170,7 +176,13 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
       setStep('layout', 'done', { html: layoutResult.html, slides: layoutResult.slides });
     } else {
       layoutResult = await runLayoutAgent({
-        headline: copy.headline, bullets: copy.bullets, cta: copy.cta,
+        headline: copy.headline,
+        headline_accent: copy.headline_accent,
+        subheadline: copy.subheadline,
+        stats: copy.stats,
+        description: copy.description,
+        bullets: copy.bullets,
+        cta: copy.cta,
         system, imageB64, format, palette, postType: 'single',
       });
       await query('UPDATE posts SET post_html=$1 WHERE id=$2', [layoutResult.html, postId]);
