@@ -88,6 +88,8 @@ Brand fonts: Cormorant Garamond (headings), Inter (body).
 You write high-impact social media copy (Instagram, Facebook) ALWAYS in English.
 Your copy is benefit-driven, marketing-trained, and fully explains the system's value based on the context provided.
 Every bullet must communicate a concrete, specific benefit or transformation — not vague statements.
+When writing stats, invent plausible, compelling numbers that fit the system's promise. They do not need to be real — they must be believable and impactful.
+bullets is optional: include only when bullet points add concrete value beyond the description paragraph; otherwise return an empty array.
 Always return valid JSON only. No text outside the JSON.`;
 
 async function runCopyAgent({ brief, system, tone, postId }) {
@@ -104,19 +106,26 @@ TONE: ${tone || 'professional, premium, direct'}
 Write high-impact social media copy in ENGLISH. The copy must:
 - Capture the core value of the system described above
 - Expand meaningfully on the client brief
-- Each bullet must be a specific, compelling benefit or outcome (not generic)
-- Think like a senior marketing strategist: headline grabs attention, bullets sell transformation, CTA drives action
+- stats values are invented — make them compelling and plausible for this system
+- description is 2-3 sentences of prose, not bullet points
+- bullets is optional — include 2-3 items only when specific points add value beyond the description; otherwise return []
+- Think like a senior marketing strategist: headline grabs attention, stats sell proof, description explains value, CTA drives action
+- image_prompt must describe the specific scene for THIS post's topic (CRM post → CRM scene, agents post → agents scene)
 
 Return ONLY this JSON:
 {
-  "headline": "Bold attention-grabbing headline that captures the core promise (max 60 chars)",
-  "bullets": [
-    "Specific benefit or outcome #1 — concrete and compelling (max 12 words)",
-    "Specific benefit or outcome #2 — concrete and compelling (max 12 words)",
-    "Specific benefit or outcome #3 — concrete and compelling (max 12 words)"
+  "headline": "Bold attention-grabbing headline that captures the core promise (max 55 chars)",
+  "headline_accent": "1-3 key words from the headline to highlight in teal — must be an exact substring of headline",
+  "subheadline": "One line that expands the promise without repeating the headline (max 70 chars)",
+  "stats": [
+    { "value": "24/7", "label": "Non-stop ops" },
+    { "value": "100x", "label": "Task output" },
+    { "value": "0",    "label": "Human errors" }
   ],
-  "cta": "Action-oriented CTA that creates urgency (max 40 chars)",
-  "image_prompt": "Cinematic background image in English: abstract tech, data flows, dark atmospheric, premium aesthetic, no text, no logos, ultra HD"
+  "description": "2-3 sentences expanding the core value of this system (max 120 chars total, plain prose)",
+  "bullets": [],
+  "cta": "Action-oriented CTA that creates urgency (max 35 chars)",
+  "image_prompt": "Specific scene description for this post topic — describe what's in the image, not a style (max 80 chars)"
 }`;
 
   const response = await client.chat.completions.create({
