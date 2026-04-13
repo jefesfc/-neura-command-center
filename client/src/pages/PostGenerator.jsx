@@ -42,8 +42,19 @@ const IMAGE_STYLES = [
   { value: 'hibrido',       label: 'Híbrido',         desc: 'Escena real con overlays digitales y UI holográfica' },
 ];
 
-const STEPS_SINGLE   = ['copy', 'image', 'layout', 'caption'];
-const STEPS_CAROUSEL = ['copy', 'image', 'carousel', 'layout', 'caption'];
+const STEPS_SINGLE   = ['creative-director', 'copy', 'image', 'layout', 'caption'];
+const STEPS_CAROUSEL = ['creative-director', 'copy', 'image', 'carousel', 'layout', 'caption'];
+
+const PLATFORMS = [
+  { value: 'Instagram', label: 'Instagram' },
+  { value: 'Facebook',  label: 'Facebook' },
+];
+
+const GOALS = [
+  { value: 'awareness',   label: 'Awareness' },
+  { value: 'authority',   label: 'Authority' },
+  { value: 'conversion',  label: 'Conversion' },
+];
 
 const FORMAT_SIZES = {
   '1:1':  { w: 1080, h: 1080 },
@@ -66,6 +77,8 @@ export default function PostGenerator() {
   const iframeRef = useRef(null);
   const sseRef    = useRef(null);
   const [imageStyle, setImageStyle] = useState('fotorrealista');
+  const [platform, setPlatform]     = useState('Instagram');
+  const [goal, setGoal]             = useState('authority');
 
   function set(key, val) { setForm(f => ({ ...f, [key]: val })); }
 
@@ -85,7 +98,7 @@ export default function PostGenerator() {
     const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, imageStyle }),
+      body: JSON.stringify({ ...form, imageStyle, platform, goal }),
     });
     const { jobId, error } = await res.json();
     if (error || !jobId) { setPhase('error'); return; }
@@ -244,7 +257,7 @@ export default function PostGenerator() {
     <div className="p-8 max-w-6xl mx-auto animate-fade-in">
       <div className="mb-8">
         <h1 className="font-display text-4xl font-bold text-white">Post Generator</h1>
-        <p className="text-white/40 mt-1 text-sm">AI agents: Copy → Image → Layout → Caption</p>
+        <p className="text-white/40 mt-1 text-sm">Creative Director → Copy → Image → Layout → Caption</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -333,6 +346,42 @@ export default function PostGenerator() {
                       <span className="label text-[10px]">{pl.label}</span>
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* Platform + Goal */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="label mb-2 block">Platform</label>
+                  <div className="flex gap-1.5">
+                    {PLATFORMS.map(p => (
+                      <button
+                        key={p.value}
+                        onClick={() => setPlatform(p.value)}
+                        className={`flex-1 py-2 rounded-lg border text-xs font-medium transition-all ${
+                          platform === p.value
+                            ? 'border-teal/50 bg-teal/10 text-teal'
+                            : 'border-white/10 text-white/40 hover:border-white/20'
+                        }`}
+                      >{p.label}</button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="label mb-2 block">Goal</label>
+                  <div className="flex gap-1.5">
+                    {GOALS.map(g => (
+                      <button
+                        key={g.value}
+                        onClick={() => setGoal(g.value)}
+                        className={`flex-1 py-2 rounded-lg border text-xs font-medium transition-all ${
+                          goal === g.value
+                            ? 'border-teal/50 bg-teal/10 text-teal'
+                            : 'border-white/10 text-white/40 hover:border-white/20'
+                        }`}
+                      >{g.label}</button>
+                    ))}
+                  </div>
                 </div>
               </div>
 

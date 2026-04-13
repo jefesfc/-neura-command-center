@@ -92,7 +92,7 @@ When writing stats, invent plausible, compelling numbers that fit the system's p
 bullets is optional: include only when bullet points add concrete value beyond the description paragraph; otherwise return an empty array.
 Always return valid JSON only. No text outside the JSON.`;
 
-async function runCopyAgent({ brief, system, tone, postId }) {
+async function runCopyAgent({ brief, system, tone, postId, cdInstruction }) {
   const systemBrief = SYSTEM_BRIEFS[system] || `System: ${system}`;
   const systemLabel = SYSTEM_LABELS[system] || system;
   const model = process.env.OPENAI_MODEL_COPY || 'gpt-4o';
@@ -101,7 +101,7 @@ async function runCopyAgent({ brief, system, tone, postId }) {
 ${systemBrief}
 
 POST BRIEF FROM CLIENT: ${brief}
-TONE: ${tone || 'professional, premium, direct'}
+TONE: ${tone || 'professional, premium, direct'}${cdInstruction ? `\n\nCREATIVE DIRECTOR STRATEGY:\n${cdInstruction}` : ''}
 
 Write high-impact social media copy in ENGLISH. The copy must:
 - Capture the core value of the system described above

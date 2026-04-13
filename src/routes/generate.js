@@ -7,20 +7,21 @@ const { runImageAgent } = require('../agents/imageAgent');
 const { runLayoutAgent } = require('../agents/layoutAgent');
 const { runCaptionAgent } = require('../agents/captionAgent');
 const { runCarouselAgent } = require('../agents/carouselAgent');
+const { runCreativeDirectorAgent } = require('../agents/creativeDirectorAgent');
 
 // In-memory job store
 const jobs = new Map();
 
 // POST /api/generate — start generation job
 router.post('/', async (req, res) => {
-  const { brief, system, format = '1:1', tone = 'profesional', palette = 'navy', post_type = 'single', imageStyle = 'fotorrealista' } = req.body;
+  const { brief, system, format = '1:1', tone = 'profesional', palette = 'navy', post_type = 'single', imageStyle = 'fotorrealista', platform = 'Instagram', goal = 'authority' } = req.body;
   if (!brief || !system) return res.status(400).json({ error: 'brief and system required' });
 
   const jobId = uuidv4();
   jobs.set(jobId, { status: 'pending', steps: {}, error: null, postId: null });
   res.json({ jobId });
 
-  runPipeline(jobId, { brief, system, format, tone, palette, post_type, imageStyle });
+  runPipeline(jobId, { brief, system, format, tone, palette, post_type, imageStyle, platform, goal });
 });
 
 // GET /api/generate/stream/:jobId — SSE stream
@@ -112,7 +113,7 @@ router.post('/step', async (req, res) => {
   }
 });
 
-async function runPipeline(jobId, { brief, system, format, tone, palette, post_type, imageStyle }) {
+async function runPipeline(jobId, { brief, system, format, tone, palette, post_type, imageStyle, platform, goal }) {
   const job = jobs.get(jobId);
   const setStep = (step, status, data = {}) => { job.steps[step] = { status, ...data }; };
 
@@ -125,9 +126,19 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
     const postId = draftResult.rows[0].id;
     job.postId = postId;
 
-    // Step 1: Copy
+    // Step 0: Creative Director — defines strategy and per-agent instructions
+    setStep('creative-director', 'running');
+    let cd = null;
+    try {
+      cd = await runCreativeDirectorAgent({ brief, system, platform, goal, postId });
+      setStep('creative-director', 'done', { strategy: cd.strategy, content_angle: cd.strategy?.content_angle });
+    } catch (err) {
+      setStep('creative-director', 'skipped', { warning: err.message });
+    }
+
+    // Step 1: Copy — enriched with CD instructions when available
     setStep('copy', 'running');
-    const copy = await runCopyAgent({ brief, system, tone, postId });
+    const copy = await runCopyAgent({ brief, system, tone, postId, cdInstruction: cd?.instructions?.copy_agent });
     await query('UPDATE posts SET headline=$1, bullets=$2, cta=$3 WHERE id=$4',
       [copy.headline, JSON.stringify(copy.bullets), copy.cta, postId]);
     setStep('copy', 'done', { headline: copy.headline });
@@ -136,7 +147,7 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
     setStep('image', 'running');
     let imageB64 = null;
     try {
-      imageB64 = await runImageAgent({ imagePrompt: copy.image_prompt, aspectRatio: format, system, imageStyle, postId });
+      imageB64 = await runImageAgent({ imagePrompt: copy.image_prompt, aspectRatio: format, system, imageStyle, postId, cdInstruction: cd?.instructions?.image_agent });
       await query('UPDATE posts SET image_b64=$1 WHERE id=$2', [imageB64, postId]);
       setStep('image', 'done');
     } catch (err) {

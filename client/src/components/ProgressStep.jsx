@@ -2,9 +2,11 @@ import React from 'react';
 import { Check, Loader2, AlertCircle, SkipForward } from 'lucide-react';
 
 const STEP_LABELS = {
-  copy: 'Copy Agent — GPT-4o',
-  image: 'Image Agent — Gemini',
-  layout: 'Layout Agent — Playwright',
+  'creative-director': 'Creative Director — Strategy',
+  copy:    'Copy Agent — GPT-4o',
+  image:   'Image Agent — Gemini',
+  carousel:'Carousel Agent — GPT-4o',
+  layout:  'Layout Agent — Render',
   caption: 'Caption Agent — GPT-4o mini',
 };
 
@@ -36,6 +38,9 @@ export default function ProgressStep({ step, state }) {
         </div>
         {status === 'running' && (
           <div className="text-xs text-white/40 mt-0.5 animate-pulse-teal">Procesando...</div>
+        )}
+        {status === 'done' && state.content_angle && (
+          <div className="text-xs text-white/40 mt-0.5 truncate italic">"{state.content_angle}"</div>
         )}
         {status === 'done' && state.headline && (
           <div className="text-xs text-white/40 mt-0.5 truncate">"{state.headline}"</div>

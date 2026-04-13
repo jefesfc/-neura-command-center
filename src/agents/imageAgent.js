@@ -20,13 +20,14 @@ const STYLE_SUFFIX = {
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
-async function runImageAgent({ imagePrompt, aspectRatio = '1:1', system = '', imageStyle = 'fotorrealista', postId }) {
+async function runImageAgent({ imagePrompt, aspectRatio = '1:1', system = '', imageStyle = 'fotorrealista', postId, cdInstruction }) {
   const model = process.env.OPENROUTER_MODEL_IMAGE || 'google/gemini-3.1-flash-image-preview';
   const apiKey = process.env.OPENROUTER_API_KEY;
 
   const context = SYSTEM_CONTEXT[system] || 'business technology, AI solutions, digital transformation';
   const styleSuffix = STYLE_SUFFIX[imageStyle] || STYLE_SUFFIX.abstract;
-  const enhancedPrompt = `${imagePrompt} — ${context} — dark navy tones (#0b1e2d), subtle teal accents, no text, no logos, ultra HD — ${styleSuffix}`;
+  const cdContext = cdInstruction ? ` — ${cdInstruction}` : '';
+  const enhancedPrompt = `${imagePrompt}${cdContext} — ${context} — dark navy tones (#0b1e2d), subtle teal accents, no text, no logos, ultra HD — ${styleSuffix}`;
 
   const payload = {
     model,
