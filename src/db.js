@@ -65,6 +65,17 @@ async function initDB() {
       END $$;
     `);
 
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS scraping_jobs (
+        id SERIAL PRIMARY KEY,
+        business_type VARCHAR(50) NOT NULL,
+        city VARCHAR(50) NOT NULL,
+        query TEXT NOT NULL,
+        triggered_at TIMESTAMPTZ DEFAULT NOW(),
+        status VARCHAR(20) DEFAULT 'scraping'
+      );
+    `);
+
     // Seed default settings if not present
     await client.query(`
       INSERT INTO settings (key, value) VALUES
