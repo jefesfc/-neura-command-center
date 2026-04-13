@@ -10,7 +10,7 @@ if (!fs.existsSync(SOCIAL_POSTS_DIR)) fs.mkdirSync(SOCIAL_POSTS_DIR, { recursive
 // GET all posts (with optional filters)
 router.get('/', async (req, res) => {
   const { status, system, limit = 50, offset = 0 } = req.query;
-  let sql = 'SELECT id, title, headline, bullets, cta, tone, system, format, caption, hashtags, status, image_b64, created_at, updated_at FROM posts';
+  let sql = 'SELECT id, title, headline, bullets, cta, tone, system, format, caption, hashtags, status, image_b64, png_path, post_type, slides, palette, created_at, updated_at FROM posts';
   const params = [];
   const conditions = [];
 
