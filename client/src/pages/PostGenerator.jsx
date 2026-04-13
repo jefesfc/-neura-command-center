@@ -36,6 +36,12 @@ const POST_TYPES = [
   { value: 'carousel', label: 'Carousel',      icon: '▭▭▭' },
 ];
 
+const IMAGE_STYLES = [
+  { value: 'fotorrealista', label: 'Fotorrealista', desc: 'Oficinas, personas, entornos corporativos reales' },
+  { value: 'abstract',      label: 'Abstract Tech',  desc: 'Flujos de datos, redes neuronales, geometría digital' },
+  { value: 'hibrido',       label: 'Híbrido',         desc: 'Escena real con overlays digitales y UI holográfica' },
+];
+
 const STEPS_SINGLE   = ['copy', 'image', 'layout', 'caption'];
 const STEPS_CAROUSEL = ['copy', 'image', 'carousel', 'layout', 'caption'];
 
@@ -59,6 +65,7 @@ export default function PostGenerator() {
   const [saving, setSaving]     = useState(false);
   const iframeRef = useRef(null);
   const sseRef    = useRef(null);
+  const [imageStyle, setImageStyle] = useState('fotorrealista');
 
   function set(key, val) { setForm(f => ({ ...f, [key]: val })); }
 
@@ -78,7 +85,7 @@ export default function PostGenerator() {
     const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ ...form, imageStyle }),
     });
     const { jobId, error } = await res.json();
     if (error || !jobId) { setPhase('error'); return; }
@@ -323,6 +330,36 @@ export default function PostGenerator() {
                       </div>
                       <span className="label text-[10px]">{pl.label}</span>
                     </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Image Style */}
+              <div>
+                <label className="label mb-2 block">Image Style</label>
+                <div className="flex flex-col gap-2">
+                  {IMAGE_STYLES.map(style => (
+                    <label
+                      key={style.value}
+                      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                        imageStyle === style.value
+                          ? 'border-teal/50 bg-teal/8'
+                          : 'border-white/10 hover:border-white/20'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="imageStyle"
+                        value={style.value}
+                        checked={imageStyle === style.value}
+                        onChange={() => setImageStyle(style.value)}
+                        className="mt-0.5 accent-teal flex-shrink-0"
+                      />
+                      <div>
+                        <div className="text-white text-sm font-semibold leading-tight">{style.label}</div>
+                        <div className="text-white/40 text-xs mt-0.5 leading-snug">{style.desc}</div>
+                      </div>
+                    </label>
                   ))}
                 </div>
               </div>
