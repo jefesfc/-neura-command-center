@@ -114,6 +114,9 @@ Create copy that:
 STYLE RULES (MANDATORY)
 --------------------------------------------------
 
+- Never write paragraphs.
+- Use short lines (1 sentence each).
+
 - No generic phrases (avoid: "boost your business", "game changer", etc.)
 - No fluff
 - No long paragraphs
