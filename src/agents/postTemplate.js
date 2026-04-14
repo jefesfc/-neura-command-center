@@ -34,7 +34,8 @@ const SYSTEM_FLOWS = {
 
 const PALETTES = {
   navy: {
-    overlay:        'linear-gradient(150deg, rgba(7,18,28,0.97) 0%, rgba(11,30,45,0.90) 50%, rgba(7,18,28,0.97) 100%)',
+    // Transparent top (image visible) → dark bottom (text readable)
+    overlay:        'linear-gradient(to bottom, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.18) 30%, rgba(7,18,28,0.72) 58%, rgba(7,18,28,0.94) 100%)',
     fallbackBg:     '#0b1e2d',
     accent:         '#1fa2b8',
     accent2:        '#c98a5a',
@@ -46,7 +47,7 @@ const PALETTES = {
     watermarkColor: 'rgba(255,255,255,0.25)',
   },
   gold: {
-    overlay:        'linear-gradient(150deg, rgba(12,8,2,0.97) 0%, rgba(20,14,4,0.90) 50%, rgba(12,8,2,0.97) 100%)',
+    overlay:        'linear-gradient(to bottom, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.18) 30%, rgba(12,8,2,0.72) 58%, rgba(12,8,2,0.94) 100%)',
     fallbackBg:     '#130e04',
     accent:         '#d4a040',
     accent2:        '#f0d080',
@@ -58,7 +59,7 @@ const PALETTES = {
     watermarkColor: 'rgba(248,242,228,0.28)',
   },
   grey: {
-    overlay:        'linear-gradient(150deg, rgba(6,6,12,0.97) 0%, rgba(10,10,18,0.90) 50%, rgba(6,6,12,0.97) 100%)',
+    overlay:        'linear-gradient(to bottom, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.18) 30%, rgba(6,6,12,0.72) 58%, rgba(6,6,12,0.94) 100%)',
     fallbackBg:     '#08080e',
     accent:         '#8fa8be',
     accent2:        '#1fa2b8',
@@ -286,7 +287,7 @@ function buildPostHTML({
     flex:1;
     display:flex;
     flex-direction:column;
-    justify-content:center;
+    justify-content:flex-end;
     padding-top:${isStory ? '10px' : '6px'};
   }
   .subheadline {
@@ -296,6 +297,7 @@ function buildPostHTML({
     letter-spacing:0.15em;
     text-transform:uppercase;
     margin-bottom:${isStory ? '20px' : '10px'};
+    text-shadow:0 1px 8px rgba(0,0,0,0.60);
   }
   .headline {
     font-family:'Cormorant Garamond',serif;
@@ -305,6 +307,7 @@ function buildPostHTML({
     color:${p.text};
     margin-bottom:${headlineMarginBottom};
     letter-spacing:-0.02em;
+    text-shadow:0 2px 16px rgba(0,0,0,0.70), 0 1px 4px rgba(0,0,0,0.50);
   }
   .description {
     font-size:${descFontSize};
