@@ -73,7 +73,7 @@ Text hierarchy MUST follow:
 2. Headline (dominant focus)
 3. Subtext (support)
 4. Bullets (structured clarity)
-5. Metrics (optional but recommended)
+5. Qualitative Pillars (3 single words — NO numbers, NO %)
 6. CTA (final action)
 
 Positioning:
@@ -141,13 +141,13 @@ CONSISTENCY RULE
 - Keep visual coherence
 - Ensure it feels like one system, not separate designs`;
 
-async function runLayoutAgent({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format = '1:1', palette = 'navy', postType = 'single', carouselSlides = [] }) {
+async function runLayoutAgent({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format = '1:1', palette = 'navy', platform = 'Instagram', postType = 'single', carouselSlides = [] }) {
   if (postType === 'carousel' && carouselSlides.length > 0) {
     const slides = buildCarouselSlides({ slides: carouselSlides, system, imageB64, format, palette });
     return { html: slides[0]?.html || '', slides };
   }
 
-  const html = buildPostHTML({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format, palette });
+  const html = buildPostHTML({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format, palette, platform });
   return { html, slides: [] };
 }
 

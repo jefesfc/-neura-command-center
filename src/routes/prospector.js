@@ -51,7 +51,7 @@ router.get('/jobs', async (req, res) => {
   }
 });
 
-// GET /results/:jobId — leads for a specific job
+// GET /results/:jobId — leads for a specific job (email required)
 router.get('/results/:jobId', async (req, res) => {
   try {
     const jobResult = await query('SELECT * FROM scraping_jobs WHERE id = $1', [req.params.jobId]);
@@ -61,6 +61,7 @@ router.get('/results/:jobId', async (req, res) => {
     const leads = await scraperQuery(
       `SELECT * FROM leads
        WHERE created_at >= $1 AND city ILIKE $2
+         AND email IS NOT NULL AND email != ''
        ORDER BY created_at DESC
        LIMIT 50`,
       [job.triggered_at, job.city]
@@ -110,7 +111,21 @@ router.delete('/jobs/:jobId', async (req, res) => {
   }
 });
 
-// GET /export/:jobId — download leads as CSV
+// POST /stop/:jobId — mark job as stopped
+router.post('/stop/:jobId', async (req, res) => {
+  try {
+    const result = await query(
+      "UPDATE scraping_jobs SET status = 'stopped' WHERE id = $1 RETURNING *",
+      [req.params.jobId]
+    );
+    if (!result.rows.length) return res.status(404).json({ error: 'Job not found' });
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /export/:jobId — download leads as CSV (email required)
 router.get('/export/:jobId', async (req, res) => {
   try {
     const jobResult = await query('SELECT * FROM scraping_jobs WHERE id = $1', [req.params.jobId]);
@@ -121,6 +136,7 @@ router.get('/export/:jobId', async (req, res) => {
       `SELECT company, phone, address, email, website, city, status
        FROM leads
        WHERE created_at >= $1 AND city ILIKE $2
+         AND email IS NOT NULL AND email != ''
        ORDER BY created_at DESC`,
       [job.triggered_at, job.city]
     );

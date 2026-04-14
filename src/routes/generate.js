@@ -12,6 +12,27 @@ const { runCreativeDirectorAgent, runCreativeDirectorValidation } = require('../
 // In-memory job store
 const jobs = new Map();
 
+// Approved qualitative values — fallback pool when model returns numbers
+const QUALITATIVE_POOL = ['Structured','Consistent','Controlled','Precise','Automated','Systematic','Reliable','Scalable','Clear','Intelligent'];
+const HAS_NUMBER = /[\d%x×]/i;
+
+/**
+ * Sanitize stats array — replace any value that contains a number with a qualitative word.
+ * Guarantees the template never renders metrics regardless of model output.
+ */
+function sanitizeStats(stats) {
+  if (!Array.isArray(stats) || stats.length === 0) return stats;
+  let fallbackIdx = 0;
+  return stats.map(s => {
+    if (!s || typeof s.value !== 'string' || HAS_NUMBER.test(s.value)) {
+      const word = QUALITATIVE_POOL[fallbackIdx % QUALITATIVE_POOL.length];
+      fallbackIdx++;
+      return { value: word, label: s?.label || 'System' };
+    }
+    return s;
+  });
+}
+
 // POST /api/generate — start generation job
 router.post('/', async (req, res) => {
   const {
@@ -183,11 +204,11 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
         headline: copy.headline,
         headline_accent: copy.headline_accent,
         subheadline: copy.subheadline,
-        stats: copy.stats,
+        stats: sanitizeStats(copy.stats),
         description: copy.description,
         bullets: copy.bullets,
         cta: copy.cta,
-        system, imageB64, format, palette, postType: 'carousel', carouselSlides,
+        system, imageB64, format, palette, platform, postType: 'carousel', carouselSlides,
       });
 
       const slidesForDb = layoutResult.slides.map(s => ({
@@ -202,11 +223,11 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
         headline: copy.headline,
         headline_accent: copy.headline_accent,
         subheadline: copy.subheadline,
-        stats: copy.stats,
+        stats: sanitizeStats(copy.stats),
         description: copy.description,
         bullets: copy.bullets,
         cta: copy.cta,
-        system, imageB64, format, palette, postType: 'single',
+        system, imageB64, format, palette, platform, postType: 'single',
       });
       await query('UPDATE posts SET post_html=$1 WHERE id=$2', [layoutResult.html, postId]);
       setStep('layout', 'done', { html: layoutResult.html });
@@ -268,9 +289,9 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
             });
             const fixedLayout = await runLayoutAgent({
               headline: fixedCopy.headline, headline_accent: fixedCopy.headline_accent,
-              subheadline: fixedCopy.subheadline, stats: fixedCopy.stats,
+              subheadline: fixedCopy.subheadline, stats: sanitizeStats(fixedCopy.stats),
               description: fixedCopy.description, bullets: fixedCopy.bullets,
-              cta: fixedCopy.cta, system, imageB64, format, palette,
+              cta: fixedCopy.cta, system, imageB64, format, palette, platform,
               postType: 'carousel', carouselSlides: fixedCarousel,
             });
             const slidesForDb = fixedLayout.slides.map(s => ({
@@ -283,9 +304,9 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
           } else {
             const fixedLayout = await runLayoutAgent({
               headline: fixedCopy.headline, headline_accent: fixedCopy.headline_accent,
-              subheadline: fixedCopy.subheadline, stats: fixedCopy.stats,
+              subheadline: fixedCopy.subheadline, stats: sanitizeStats(fixedCopy.stats),
               description: fixedCopy.description, bullets: fixedCopy.bullets,
-              cta: fixedCopy.cta, system, imageB64, format, palette, postType: 'single',
+              cta: fixedCopy.cta, system, imageB64, format, palette, platform, postType: 'single',
             });
             await query('UPDATE posts SET post_html=$1 WHERE id=$2', [fixedLayout.html, postId]);
             setStep('layout', 'done', { html: fixedLayout.html });

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   Search, Plus, Trash2, RefreshCw,
-  Download, LayoutGrid, Table2, X, ChevronDown
+  Download, LayoutGrid, Table2, X, ChevronDown, StopCircle
 } from 'lucide-react';
 
 const CITY_GROUPS = {
@@ -40,6 +40,7 @@ export default function Prospector() {
   const [city,          setCity]          = useState('London');
   const [triggering,    setTriggering]    = useState(false);
   const [refreshing,    setRefreshing]    = useState(false);
+  const [stopping,      setStopping]      = useState(false);
   const [viewMode,      setViewMode]      = useState('card');
 
   useEffect(() => { fetchJobs(); }, []);
@@ -93,6 +94,17 @@ export default function Prospector() {
       setLeads([]);
     } catch (_) {}
     setTriggering(false);
+  }
+
+  async function handleStop() {
+    if (!selectedJobId) return;
+    setStopping(true);
+    try {
+      await fetch(`/api/prospector/stop/${selectedJobId}`, { method: 'POST' });
+      setJobs(prev => prev.map(j => j.id === selectedJobId ? { ...j, status: 'stopped' } : j));
+      setSelectedJob(prev => prev ? { ...prev, status: 'stopped' } : prev);
+    } catch (_) {}
+    setStopping(false);
   }
 
   async function handleUpdateStatus(leadId, status) {
@@ -255,6 +267,17 @@ export default function Prospector() {
                   </button>
                 </div>
 
+                {selectedJob?.status === 'scraping' && (
+                  <button
+                    onClick={handleStop}
+                    disabled={stopping}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg border border-red-400/30 text-red-400/80 hover:bg-red-400/10 hover:border-red-400/50 text-sm transition-all disabled:opacity-50"
+                  >
+                    <StopCircle size={14} />
+                    {stopping ? 'Deteniendo...' : 'Stop'}
+                  </button>
+                )}
+
                 <button
                   onClick={() => fetchResults(selectedJobId)}
                   disabled={refreshing}
@@ -335,9 +358,9 @@ function JobCard({ job, isSelected, onSelect, onDelete, relTime }) {
       </div>
       <div className="flex items-center justify-between mt-2">
         <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${
-          job.status === 'done'
-            ? 'bg-teal/15 text-teal'
-            : 'bg-amber-500/15 text-amber-400'
+          job.status === 'done'    ? 'bg-teal/15 text-teal' :
+          job.status === 'stopped' ? 'bg-red-400/10 text-red-400/70' :
+                                     'bg-amber-500/15 text-amber-400'
         }`}>
           {job.status}
         </span>
