@@ -197,7 +197,7 @@ function buildPostHTML({
 
   const subFontSize  = isStory ? '30px' : '16px';
   const descFontSize = isStory ? '32px' : '18px';
-  const ctaFontSize  = isStory ? '34px' : '20px';
+  const ctaFontSize  = isStory ? '20px' : '13px';
 
   const headlineMarginBottom = isIG
     ? (isStory ? '44px' : '28px')
@@ -289,6 +289,7 @@ function buildPostHTML({
     flex-direction:column;
     justify-content:flex-end;
     padding-top:${isStory ? '10px' : '6px'};
+    padding-bottom:${isStory ? '240px' : '110px'};
   }
   .subheadline {
     font-family:'DM Mono',monospace;
@@ -339,19 +340,21 @@ function buildPostHTML({
   }
   .cta-btn {
     background:${p.accent};
-    padding:${isStory ? '15px 34px' : '9px 20px'};
+    padding:${isStory ? '8px 28px' : '5px 18px'};
     border-radius:2px;
     display:inline-flex;
     align-items:center;
+    justify-content:center;
     width:fit-content;
   }
   .cta-text {
     font-family:'Inter',sans-serif;
     font-size:${ctaFontSize};
-    font-weight:700;
+    font-weight:600;
     color:#070c12;
-    letter-spacing:0.08em;
+    letter-spacing:0.10em;
     text-transform:uppercase;
+    line-height:1;
   }
   .watermark {
     position:absolute;
