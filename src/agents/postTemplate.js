@@ -81,11 +81,11 @@ function buildFlowSVG(steps, accentColor, isStory) {
   if (!steps || steps.length === 0) return '';
 
   const W       = 700;
-  const dotY    = isStory ? 24 : 18;
-  const labelY  = isStory ? 48 : 38;
-  const fs      = isStory ? 18 : 11;
-  const dotR    = isStory ? 8  : 5;
-  const svgH    = isStory ? 62 : 48;
+  const dotY    = isStory ? 26 : 18;
+  const labelY  = isStory ? 54 : 38;
+  const fs      = isStory ? 22 : 11;
+  const dotR    = isStory ? 10 : 5;
+  const svgH    = isStory ? 74 : 48;
   const margin  = 50;
   const gap     = (W - 2 * margin) / (steps.length - 1);
 
@@ -197,11 +197,7 @@ function buildPostHTML({
 
   const subFontSize  = isStory ? '30px' : '16px';
   const descFontSize = isStory ? '32px' : '18px';
-  const ctaFontSize  = isStory ? '20px' : '13px';
-
-  const headlineMarginBottom = isIG
-    ? (isStory ? '44px' : '28px')
-    : (isStory ? '28px' : '16px');
+  const ctaFontSize  = isStory ? '24px' : '15px';
 
   return `<!DOCTYPE html>
 <html>
@@ -237,7 +233,7 @@ function buildPostHTML({
     display:flex;
     flex-direction:column;
     height:100%;
-    padding:${isStory ? '72px 80px 72px 86px' : '52px 64px 52px 70px'};
+    padding:${isStory ? '72px 80px 96px 86px' : '52px 64px 72px 70px'};
   }
   .top-bar {
     display:flex;
@@ -287,9 +283,8 @@ function buildPostHTML({
     flex:1;
     display:flex;
     flex-direction:column;
-    justify-content:flex-end;
-    padding-top:${isStory ? '10px' : '6px'};
-    padding-bottom:${isStory ? '240px' : '110px'};
+    justify-content:center;
+    gap:${isStory ? '24px' : '14px'};
   }
   .subheadline {
     font-family:'DM Mono',monospace;
@@ -297,7 +292,6 @@ function buildPostHTML({
     color:${p.accent};
     letter-spacing:0.15em;
     text-transform:uppercase;
-    margin-bottom:${isStory ? '20px' : '10px'};
     text-shadow:0 1px 8px rgba(0,0,0,0.60);
   }
   .headline {
@@ -306,7 +300,6 @@ function buildPostHTML({
     font-weight:700;
     line-height:1.08;
     color:${p.text};
-    margin-bottom:${headlineMarginBottom};
     letter-spacing:-0.02em;
     text-shadow:0 2px 16px rgba(0,0,0,0.70), 0 1px 4px rgba(0,0,0,0.50);
   }
@@ -340,7 +333,7 @@ function buildPostHTML({
   }
   .cta-btn {
     background:${p.accent};
-    padding:${isStory ? '8px 28px' : '5px 18px'};
+    padding:${isStory ? '10px 32px' : '7px 20px'};
     border-radius:2px;
     display:inline-flex;
     align-items:center;
@@ -355,14 +348,17 @@ function buildPostHTML({
     letter-spacing:0.10em;
     text-transform:uppercase;
     line-height:1;
+    white-space:nowrap;
   }
   .watermark {
     position:absolute;
-    right:0;
+    bottom:${isStory ? '36px' : '22px'};
+    right:${isStory ? '86px' : '70px'};
     font-family:'DM Mono',monospace;
-    font-size:${isStory ? '18px' : '12px'};
+    font-size:${isStory ? '17px' : '11px'};
     color:${p.watermarkColor};
     letter-spacing:0.10em;
+    z-index:15;
   }
 </style>
 </head>
@@ -396,12 +392,12 @@ function buildPostHTML({
     <div class="bottom-sep"></div>
     <div class="bottom-bar">
       <div class="cta-btn">
-        <span class="cta-text">${esc(cta)} →</span>
+        <span class="cta-text">${esc((cta || '').replace(/\s*→+\s*$/, '').trim())} →</span>
       </div>
-      <span class="watermark">neurasolutions.cloud</span>
     </div>
 
   </div>
+  <span class="watermark">neurasolutions.cloud</span>
 </div>
 </body>
 </html>`;
