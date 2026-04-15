@@ -118,13 +118,13 @@ function logoEl(isStory) {
 // Badge box: two rows — system name (accent color) + platform label (muted)
 // Has a subtle border + tinted background — structured, not plain text
 function badgeEl(system, platform, p, isStory) {
-  const pad  = isStory ? '9px 18px' : '5px 12px';
-  const gap  = isStory ? '3px' : '2px';
-  const sz1  = isStory ? '14px' : '9px';
-  const sz2  = isStory ? '10px' : '6px';
-  return `<div style="display:inline-flex;flex-direction:column;align-items:flex-end;border:1px solid ${p.badgeColor}55;background:${p.badgeColor}18;padding:${pad};border-radius:2px;gap:${gap};">
-    <span style="font-family:'DM Mono',monospace;font-size:${sz1};font-weight:500;color:${p.badgeColor};letter-spacing:0.18em;text-transform:uppercase;line-height:1;">${esc(SYSTEM_BADGE[system] || system || 'Neura')}</span>
-    <span style="font-family:'DM Mono',monospace;font-size:${sz2};color:${p.textMuted};letter-spacing:0.16em;text-transform:uppercase;line-height:1;">${esc(platform)}</span>
+  const pad  = isStory ? '10px 20px' : '6px 14px';
+  const gap  = isStory ? '4px' : '3px';
+  const sz1  = isStory ? '14px' : '10px';
+  const sz2  = isStory ? '10px' : '8px';
+  return `<div style="display:inline-flex;flex-direction:column;align-items:center;border:1px solid ${p.badgeColor}55;background:${p.badgeColor}18;padding:${pad};border-radius:2px;gap:${gap};">
+    <span style="font-family:'DM Mono',monospace;font-size:${sz1};font-weight:500;color:${p.badgeColor};letter-spacing:0.18em;text-transform:uppercase;line-height:1;white-space:nowrap;">${esc(SYSTEM_BADGE[system] || system || 'Neura')}</span>
+    <span style="font-family:'DM Mono',monospace;font-size:${sz2};color:${p.textMuted};letter-spacing:0.16em;text-transform:uppercase;line-height:1;white-space:nowrap;">${esc(platform)}</span>
   </div>`;
 }
 
@@ -234,25 +234,22 @@ ${FONTS}
   <!-- Layer 3: Edge vignette — draws focus to center, adds cinematic depth -->
   <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,transparent 35%,rgba(0,0,0,0.42) 100%);z-index:2;"></div>
 
-  <!-- Layer 4: Full-width hairline at 57% — stages image above, text below -->
-  <div style="position:absolute;top:57%;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,${p.accent}55 15%,${p.accent}55 85%,transparent 100%);z-index:6;"></div>
+  <!-- Layer 4: Full-width hairline at 48% — aligns with where text block starts -->
+  <div style="position:absolute;top:48%;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,${p.accent}55 15%,${p.accent}55 85%,transparent 100%);z-index:6;"></div>
 
   <!-- Layer 5: Corner brackets — the visual chrome that makes it look designed -->
   ${bracketsEl(p, isStory)}
 
-  <!-- Layer 6: Main layout — flex column, anchored to bottom -->
-  <div style="position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;padding:${pad.top} ${pad.side} ${pad.bot} ${pad.side};">
+  <!-- Layer 6a: Top bar — absolute at top, independent of text position -->
+  <div style="position:absolute;top:${pad.top};left:${pad.side};right:${pad.side};z-index:10;display:flex;align-items:flex-start;justify-content:space-between;">
+    ${logoEl(isStory)}
+    ${badgeEl(system, 'Instagram', p, isStory)}
+  </div>
 
-    <!-- TOP BAR -->
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;">
-      ${logoEl(isStory)}
-      ${badgeEl(system, 'Instagram', p, isStory)}
-    </div>
+  <!-- Layer 6b: Text block — absolute at 48% from top, spreads across the canvas -->
+  <!-- 48% of 1080px = 519px | 48% of 1920px = 922px -->
+  <div style="position:absolute;top:48%;left:${pad.side};right:${pad.side};z-index:10;">
 
-    <!-- IMAGE ZONE — flex:1 lets the image breathe, gradient covers the transition -->
-    <div style="flex:1;"></div>
-
-    <!-- TEXT ZONE — anchored to bottom -->
     ${accentLineEl(p, isStory)}
 
     ${hook ? `<div style="font-family:'DM Mono',monospace;font-size:${hookSz};color:${p.accent};letter-spacing:0.22em;text-transform:uppercase;margin-bottom:${isStory?'22px':'14px'};text-shadow:0 1px 8px rgba(0,0,0,0.90);">${esc(hook)}</div>` : ''}
@@ -365,43 +362,39 @@ ${FONTS}
   <!-- Layer 4: Left accent bar — 4px authority anchor, teal → gold → fade -->
   <div style="position:absolute;top:0;left:0;width:${barW}px;height:100%;background:linear-gradient(180deg,${p.accent} 0%,${p.accent2}99 55%,transparent 100%);z-index:5;"></div>
 
-  <!-- Layer 5: Main layout -->
-  <div style="position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;justify-content:space-between;padding:${pad.top} ${pad.right} ${pad.bot} ${pad.left};">
+  <!-- Layer 5a: Top bar — absolute at top, independent of content position -->
+  <div style="position:absolute;top:${pad.top};left:${pad.left};right:${pad.right};z-index:10;display:flex;align-items:flex-start;justify-content:space-between;">
+    ${logoEl(isStory)}
+    ${badgeEl(system, 'Facebook', p, isStory)}
+  </div>
 
-    <!-- TOP BAR -->
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;">
-      ${logoEl(isStory)}
-      ${badgeEl(system, 'Facebook', p, isStory)}
-    </div>
+  <!-- Layer 5b: Editorial block — absolute at 50% from top, content spreads downward -->
+  <!-- 50% of 1080px = 540px | 50% of 1920px = 960px -->
+  <div style="position:absolute;top:50%;left:${pad.left};right:${pad.right};z-index:10;">
 
-    <!-- EDITORIAL CONTENT BLOCK — sits in the bottom half -->
-    <div>
+    <!-- Full-width separator — marks the start of the editorial zone -->
+    <div style="width:100%;height:1px;background:linear-gradient(90deg,${p.accent}66,transparent);margin-bottom:${isStory?'26px':'16px'};"></div>
 
-      <!-- Full-width separator — marks the start of the editorial zone -->
-      <div style="width:100%;height:1px;background:linear-gradient(90deg,${p.accent}66,transparent);margin-bottom:${isStory?'26px':'16px'};"></div>
+    <!-- Hook — context and urgency -->
+    ${subheadline ? `<div style="font-family:'DM Mono',monospace;font-size:${hookSz};color:${p.accent};letter-spacing:0.24em;text-transform:uppercase;margin-bottom:${isStory?'16px':'10px'};">${esc(subheadline.toUpperCase())}</div>` : ''}
 
-      <!-- Hook — context and urgency -->
-      ${subheadline ? `<div style="font-family:'DM Mono',monospace;font-size:${hookSz};color:${p.accent};letter-spacing:0.24em;text-transform:uppercase;margin-bottom:${isStory?'16px':'10px'};">${esc(subheadline.toUpperCase())}</div>` : ''}
+    <!-- H1 — authority serif, dominant focal point -->
+    <h1 style="font-family:'Cormorant Garamond',serif;font-size:${h1Size};font-weight:700;line-height:1.06;color:${p.text};letter-spacing:-0.015em;text-shadow:0 2px 16px rgba(0,0,0,0.55);margin-bottom:${isStory?'24px':'14px'};">${headlineHtml}</h1>
 
-      <!-- H1 — authority serif, dominant focal point -->
-      <h1 style="font-family:'Cormorant Garamond',serif;font-size:${h1Size};font-weight:700;line-height:1.06;color:${p.text};letter-spacing:-0.015em;text-shadow:0 2px 16px rgba(0,0,0,0.55);margin-bottom:${isStory?'24px':'14px'};">${headlineHtml}</h1>
+    <!-- Gradient separator — editorial style, fades to transparent -->
+    ${separatorEl(p, isStory)}
 
-      <!-- Gradient separator — editorial style, fades to transparent -->
-      ${separatorEl(p, isStory)}
+    <!-- Description — one focused narrative sentence -->
+    ${description ? `<p style="font-family:'Inter',sans-serif;font-size:${descSz};color:${p.textBody};line-height:1.65;font-weight:300;letter-spacing:0.008em;margin-bottom:${isStory?'22px':'13px'};">${esc(description)}</p>` : ''}
 
-      <!-- Description — one focused narrative sentence -->
-      ${description ? `<p style="font-family:'Inter',sans-serif;font-size:${descSz};color:${p.textBody};line-height:1.65;font-weight:300;letter-spacing:0.008em;margin-bottom:${isStory?'22px':'13px'};">${esc(description)}</p>` : ''}
+    <!-- Bullets — specific outcomes -->
+    ${bulletsHtml ? `<div style="margin-bottom:${isStory?'22px':'13px'};">${bulletsHtml}</div>` : ''}
 
-      <!-- Bullets — specific outcomes -->
-      ${bulletsHtml ? `<div style="margin-bottom:${isStory?'22px':'13px'};">${bulletsHtml}</div>` : ''}
+    <!-- Pillar words — DM Mono inline, qualitative only -->
+    <div style="margin-bottom:${isStory?'32px':'18px'};">${pillarsHtml}</div>
 
-      <!-- Pillar words — DM Mono inline, qualitative only -->
-      <div style="margin-bottom:${isStory?'32px':'18px'};">${pillarsHtml}</div>
-
-      <!-- CTA -->
-      ${ctaEl(cta, p, isStory)}
-
-    </div>
+    <!-- CTA -->
+    ${ctaEl(cta, p, isStory)}
 
   </div>
 
