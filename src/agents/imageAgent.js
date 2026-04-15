@@ -172,7 +172,11 @@ async function runImageAgent({ imagePrompt, aspectRatio = '1:1', system = '', im
     throw new Error('No image returned from OpenRouter. Check API key and model availability.');
   }
 
-  return imageB64; // base64 PNG string
+  // Detect imageTone from raw prompt — light images need heavier overlay for text contrast
+  const lightKeywords = /bright|light\s|white|daylight|sunny|clean office|modern office|minimalist|airy|open space|well.?lit/i;
+  const imageTone = lightKeywords.test(imagePrompt) ? 'light' : 'dark';
+
+  return { imageB64, imageTone };
 }
 
 module.exports = { runImageAgent };

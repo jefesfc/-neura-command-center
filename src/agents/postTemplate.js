@@ -32,7 +32,8 @@ const PALETTES = {
     overlayTop:     'rgba(7,18,28,0.10)',
     overlayMid:     'rgba(7,18,28,0.52)',
     overlayBot:     'rgba(7,18,28,0.97)',
-    fbOverlay:      'rgba(5,12,22,0.91)',
+    fbOverlay:      'rgba(5,12,22,0.68)',
+    fbOverlayMid:   'rgba(5,12,22,0.52)',
     glowColor:      'rgba(31,162,184,0.10)',
   },
   gold: {
@@ -47,7 +48,8 @@ const PALETTES = {
     overlayTop:     'rgba(19,14,4,0.10)',
     overlayMid:     'rgba(19,14,4,0.52)',
     overlayBot:     'rgba(19,14,4,0.97)',
-    fbOverlay:      'rgba(16,10,2,0.91)',
+    fbOverlay:      'rgba(16,10,2,0.68)',
+    fbOverlayMid:   'rgba(16,10,2,0.52)',
     glowColor:      'rgba(212,160,64,0.10)',
   },
   grey: {
@@ -62,7 +64,8 @@ const PALETTES = {
     overlayTop:     'rgba(8,8,14,0.10)',
     overlayMid:     'rgba(8,8,14,0.52)',
     overlayBot:     'rgba(8,8,14,0.97)',
-    fbOverlay:      'rgba(6,6,10,0.91)',
+    fbOverlay:      'rgba(6,6,10,0.68)',
+    fbOverlayMid:   'rgba(6,6,10,0.52)',
     glowColor:      'rgba(143,168,190,0.10)',
   },
 };
@@ -108,20 +111,24 @@ function applyAccent(headline, accent_word, accentColor) {
 
 // ── Shared element builders ───────────────────────────────────────────────────
 
-function logoEl(isStory) {
-  const h = isStory ? '36px' : '24px';
+function logoEl(format) {
+  // story → large | 1:1 → medium | landscape → compact
+  const h   = format === '9:16' ? '46px' : format === '1.91:1' ? '30px' : '34px';
+  const fSz = format === '9:16' ? '38px' : format === '1.91:1' ? '24px' : '28px';
   return LOGO_B64
     ? `<img src="data:image/png;base64,${LOGO_B64}" alt="Neura" style="height:${h};width:auto;object-fit:contain;display:block;">`
-    : `<span style="font-family:'Cormorant Garamond',serif;font-size:${isStory?'30px':'20px'};font-weight:700;letter-spacing:0.14em;color:#fff;">NEURA</span>`;
+    : `<span style="font-family:'Cormorant Garamond',serif;font-size:${fSz};font-weight:700;letter-spacing:0.14em;color:#fff;">NEURA</span>`;
 }
 
 // Badge box: two rows — system name (accent color) + platform label (muted)
 // Has a subtle border + tinted background — structured, not plain text
-function badgeEl(system, platform, p, isStory) {
-  const pad  = isStory ? '10px 20px' : '6px 14px';
+function badgeEl(system, platform, p, format) {
+  const isStory = format === '9:16';
+  const isLand  = format === '1.91:1';
+  const pad  = isStory ? '10px 20px' : isLand ? '7px 15px' : '8px 17px';
   const gap  = isStory ? '4px' : '3px';
-  const sz1  = isStory ? '14px' : '10px';
-  const sz2  = isStory ? '10px' : '8px';
+  const sz1  = isStory ? '16px' : isLand ? '11px' : '13px';
+  const sz2  = isStory ? '12px' : isLand ? '9px'  : '10px';
   return `<div style="display:inline-flex;flex-direction:column;align-items:center;border:1px solid ${p.badgeColor}55;background:${p.badgeColor}18;padding:${pad};border-radius:2px;gap:${gap};">
     <span style="font-family:'DM Mono',monospace;font-size:${sz1};font-weight:500;color:${p.badgeColor};letter-spacing:0.18em;text-transform:uppercase;line-height:1;white-space:nowrap;">${esc(SYSTEM_BADGE[system] || system || 'Neura')}</span>
     <span style="font-family:'DM Mono',monospace;font-size:${sz2};color:${p.textMuted};letter-spacing:0.16em;text-transform:uppercase;line-height:1;white-space:nowrap;">${esc(platform)}</span>
@@ -187,10 +194,16 @@ function separatorEl(p, isStory) {
 // Layout: top bar | flex:1 (image breathes) | accent line | hook | H1 | CTA
 // NO description, NO bullets, NO pillars, NO accent word below H1
 // ═════════════════════════════════════════════════════════════════════════════
-function buildInstagramHTML({ headline, headline_accent, subheadline, cta, system, imageB64, format, palette }) {
+function buildInstagramHTML({ headline, headline_accent, subheadline, cta, system, imageB64, format, palette, imageTone = 'dark' }) {
   const isStory = format === '9:16';
   const W = 1080, H = isStory ? 1920 : 1080;
   const p = PALETTES[palette] || PALETTES.navy;
+
+  // Overlay adapts to image brightness:
+  //   dark image  → lighter overlay (image already dark, let it breathe)
+  //   light image → heavier overlay (image bright, need more contrast for text)
+  const igMid = imageTone === 'light' ? '0.62' : '0.40';
+  const igBot = imageTone === 'light' ? '0.97' : '0.93';
 
   const bgStyle = imageB64
     ? `background-image:url('data:image/jpeg;base64,${imageB64}');background-size:cover;background-position:center top;`
@@ -221,14 +234,13 @@ ${FONTS}
 <body>
 <div style="position:relative;width:${W}px;height:${H}px;${bgStyle}font-family:'Inter',sans-serif;">
 
-  <!-- Layer 2: Cinematic gradient — transparent top, near-black bottom -->
-  <!-- Darkening starts at 40% so the text zone always has strong contrast -->
+  <!-- Layer 2: Cinematic gradient — adapts to imageTone (dark=lighter overlay, light=heavier) -->
   <div style="position:absolute;inset:0;background:linear-gradient(to bottom,
     ${p.overlayTop} 0%,
     rgba(0,0,0,0.06) 18%,
-    ${p.overlayMid} 40%,
+    rgba(7,18,28,${igMid}) 40%,
     rgba(7,18,28,0.82) 58%,
-    ${p.overlayBot} 100%
+    rgba(7,18,28,${igBot}) 100%
   );z-index:1;"></div>
 
   <!-- Layer 3: Edge vignette — draws focus to center, adds cinematic depth -->
@@ -242,8 +254,8 @@ ${FONTS}
 
   <!-- Layer 6a: Top bar — absolute at top, independent of text position -->
   <div style="position:absolute;top:${pad.top};left:${pad.side};right:${pad.side};z-index:10;display:flex;align-items:flex-start;justify-content:space-between;">
-    ${logoEl(isStory)}
-    ${badgeEl(system, 'Instagram', p, isStory)}
+    ${logoEl(format)}
+    ${badgeEl(system, 'Instagram', p, format)}
   </div>
 
   <!-- Layer 6b: Text block — absolute at 48% from top, spreads across the canvas -->
@@ -281,9 +293,15 @@ ${FONTS}
 // Layout: top bar | [separator | hook | H1 | sep line | desc | bullets | pillars | CTA]
 // Content left padding clears the 4px left bar
 // ═════════════════════════════════════════════════════════════════════════════
-function buildFacebookHTML({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format, palette }) {
-  const isStory = format === '9:16';
-  const W = 1080, H = isStory ? 1920 : 1080;
+function buildFacebookHTML({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format, palette, imageTone = 'dark' }) {
+  const isStory    = format === '9:16';
+  const isLandscape = format === '1.91:1';
+  // Canvas sizes:
+  //   1:1     → 1080×1080  (square, shows with gray bars in desktop feed)
+  //   1.91:1  → 1200×628   (landscape, fills full feed width on desktop — recommended)
+  //   9:16    → 1080×1920  (story)
+  const W = isLandscape ? 1200 : 1080;
+  const H = isStory ? 1920 : isLandscape ? 628 : 1080;
   const p = PALETTES[palette] || PALETTES.navy;
 
   const bgStyle = imageB64
@@ -294,17 +312,19 @@ function buildFacebookHTML({ headline, headline_accent, subheadline, stats, desc
 
   const chars = (headline || '').length;
   const h1Size = isStory
-    ? (chars <= 28 ? '112px' : chars <= 40 ? '94px' : '76px')
-    : (chars <= 28 ? '80px'  : chars <= 40 ? '66px' : '52px');
+    ? (chars <= 28 ? '112px' : chars <= 40 ? '94px'  : '76px')
+    : isLandscape
+    ? (chars <= 28 ? '72px'  : chars <= 40 ? '58px'  : '46px')
+    : (chars <= 28 ? '80px'  : chars <= 40 ? '66px'  : '52px');
 
   // Bullets with teal dot
   const bulletsHtml = Array.isArray(bullets) && bullets.length > 0
     ? bullets.slice(0, 3).map(b => {
         const dotSz  = isStory ? '6px' : '4px';
-        const dotTop = isStory ? '15px' : '8px';
-        const textSz = isStory ? '26px' : '15px';
+        const dotTop = isStory ? '15px' : isLandscape ? '7px' : '8px';
+        const textSz = isStory ? '26px' : isLandscape ? '14px' : '15px';
         const gap    = isStory ? '16px' : '10px';
-        const mb     = isStory ? '11px' : '7px';
+        const mb     = isStory ? '11px' : '6px';
         return `<div style="display:flex;align-items:flex-start;gap:${gap};margin-bottom:${mb};">
           <div style="width:${dotSz};height:${dotSz};border-radius:50%;background:${p.accent};flex-shrink:0;margin-top:${dotTop};"></div>
           <span style="font-family:'Inter',sans-serif;font-size:${textSz};color:${p.textBody};line-height:1.55;font-weight:300;">${esc(b)}</span>
@@ -321,24 +341,27 @@ function buildFacebookHTML({ headline, headline_accent, subheadline, stats, desc
     .slice(0, 3)
     .map((v, i) => {
       const color = i === 1 ? p.accent2 : p.accent;
-      const sz = isStory ? '14px' : '9px';
+      const sz = isStory ? '14px' : isLandscape ? '8px' : '9px';
       return `<span style="font-family:'DM Mono',monospace;font-size:${sz};color:${color};letter-spacing:0.20em;text-transform:uppercase;">${esc(v)}</span>`;
     })
     .join(`<span style="color:${p.textMuted};margin:0 ${isStory?'14px':'9px'};">·</span>`);
 
   // Side padding — content clears the 4px left bar
-  const barW   = 4;
-  const padSide = isStory ? 86 : 66;
+  const barW    = 4;
+  const padSide = isStory ? 86 : isLandscape ? 56 : 66;
   const padLeft = padSide + barW + (isStory ? 10 : 6);
   const pad = {
-    top: isStory ? '66px' : '46px',
+    top:   isStory ? '66px' : isLandscape ? '36px' : '46px',
     right: `${padSide}px`,
-    bot: isStory ? '74px' : '52px',
-    left: `${padLeft}px`,
+    bot:   isStory ? '74px' : isLandscape ? '36px' : '52px',
+    left:  `${padLeft}px`,
   };
 
-  const hookSz  = isStory ? '17px' : '10px';
-  const descSz  = isStory ? '25px' : '15px';
+  // For landscape the editorial block starts at 35% (lower section of the shorter canvas)
+  const editorialTop = isStory ? '50%' : isLandscape ? '35%' : '50%';
+
+  const hookSz  = isStory ? '17px' : isLandscape ? '9px' : '10px';
+  const descSz  = isStory ? '25px' : isLandscape ? '13px' : '15px';
 
   return `<!DOCTYPE html><html>
 <head>
@@ -349,11 +372,11 @@ ${FONTS}
 <body>
 <div style="position:relative;width:${W}px;height:${H}px;${bgStyle}font-family:'Inter',sans-serif;">
 
-  <!-- Layer 2: Diagonal editorial overlay — image becomes rich texture, not distraction -->
+  <!-- Layer 2: Diagonal editorial overlay — adapts to imageTone (dark=lighter, light=heavier) -->
   <div style="position:absolute;inset:0;background:linear-gradient(148deg,
-    ${p.fbOverlay} 0%,
-    rgba(5,12,22,0.82) 45%,
-    ${p.fbOverlay} 100%
+    rgba(5,12,22,${imageTone === 'light' ? '0.78' : '0.58'}) 0%,
+    rgba(5,12,22,${imageTone === 'light' ? '0.62' : '0.44'}) 45%,
+    rgba(5,12,22,${imageTone === 'light' ? '0.78' : '0.58'}) 100%
   );z-index:1;"></div>
 
   <!-- Layer 3: Accent glow top-right — brand color depth -->
@@ -364,13 +387,13 @@ ${FONTS}
 
   <!-- Layer 5a: Top bar — absolute at top, independent of content position -->
   <div style="position:absolute;top:${pad.top};left:${pad.left};right:${pad.right};z-index:10;display:flex;align-items:flex-start;justify-content:space-between;">
-    ${logoEl(isStory)}
-    ${badgeEl(system, 'Facebook', p, isStory)}
+    ${logoEl(format)}
+    ${badgeEl(system, 'Facebook', p, format)}
   </div>
 
   <!-- Layer 5b: Editorial block — absolute at 50% from top, content spreads downward -->
   <!-- 50% of 1080px = 540px | 50% of 1920px = 960px -->
-  <div style="position:absolute;top:50%;left:${pad.left};right:${pad.right};z-index:10;">
+  <div style="position:absolute;top:${editorialTop};left:${pad.left};right:${pad.right};z-index:10;">
 
     <!-- Full-width separator — marks the start of the editorial zone -->
     <div style="width:100%;height:1px;background:linear-gradient(90deg,${p.accent}66,transparent);margin-bottom:${isStory?'26px':'16px'};"></div>
@@ -406,11 +429,11 @@ ${FONTS}
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
-function buildPostHTML({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format = '1:1', palette = 'navy', platform = 'Instagram' }) {
+function buildPostHTML({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format = '1:1', palette = 'navy', platform = 'Instagram', imageTone = 'dark' }) {
   const isIG = (platform || 'Instagram').toLowerCase() === 'instagram';
   return isIG
-    ? buildInstagramHTML({ headline, headline_accent, subheadline, cta, system, imageB64, format, palette })
-    : buildFacebookHTML({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format, palette });
+    ? buildInstagramHTML({ headline, headline_accent, subheadline, cta, system, imageB64, format, palette, imageTone })
+    : buildFacebookHTML({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format, palette, imageTone });
 }
 
 module.exports = { buildPostHTML };

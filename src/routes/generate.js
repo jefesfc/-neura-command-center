@@ -107,7 +107,7 @@ router.post('/step', async (req, res) => {
 
     if (step === 'image') {
       const prompt = imagePrompt || `${post.headline} ${post.brief}`;
-      const imageB64 = await runImageAgent({ imagePrompt: prompt, aspectRatio: post.format, system: post.system, postId });
+      const { imageB64 } = await runImageAgent({ imagePrompt: prompt, aspectRatio: post.format, system: post.system, postId });
       await query('UPDATE posts SET image_b64=$1, updated_at=NOW() WHERE id=$2', [imageB64, postId]);
       return res.json({ ok: true, imageB64 });
     }
@@ -179,8 +179,9 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
     // Step 2: Image
     setStep('image', 'running');
     let imageB64 = null;
+    let imageTone = 'dark';
     try {
-      imageB64 = await runImageAgent({ imagePrompt: copy.image_prompt, aspectRatio: format, system, imageStyle, postId, cdInstruction: cd?.instructions?.image_agent });
+      ({ imageB64, imageTone } = await runImageAgent({ imagePrompt: copy.image_prompt, aspectRatio: format, system, imageStyle, postId, cdInstruction: cd?.instructions?.image_agent }));
       await query('UPDATE posts SET image_b64=$1 WHERE id=$2', [imageB64, postId]);
       setStep('image', 'done');
     } catch (err) {
@@ -208,7 +209,7 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
         description: copy.description,
         bullets: copy.bullets,
         cta: copy.cta,
-        system, imageB64, format, palette, platform, postType: 'carousel', carouselSlides,
+        system, imageB64, format, palette, platform, postType: 'carousel', carouselSlides, imageTone,
       });
 
       const slidesForDb = layoutResult.slides.map(s => ({
@@ -227,7 +228,7 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
         description: copy.description,
         bullets: copy.bullets,
         cta: copy.cta,
-        system, imageB64, format, palette, platform, postType: 'single',
+        system, imageB64, format, palette, platform, postType: 'single', imageTone,
       });
       await query('UPDATE posts SET post_html=$1 WHERE id=$2', [layoutResult.html, postId]);
       setStep('layout', 'done', { html: layoutResult.html });
@@ -292,7 +293,7 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
               subheadline: fixedCopy.subheadline, stats: sanitizeStats(fixedCopy.stats),
               description: fixedCopy.description, bullets: fixedCopy.bullets,
               cta: fixedCopy.cta, system, imageB64, format, palette, platform,
-              postType: 'carousel', carouselSlides: fixedCarousel,
+              postType: 'carousel', carouselSlides: fixedCarousel, imageTone,
             });
             const slidesForDb = fixedLayout.slides.map(s => ({
               index: s.index, type: s.type, html: s.html,
@@ -306,7 +307,7 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
               headline: fixedCopy.headline, headline_accent: fixedCopy.headline_accent,
               subheadline: fixedCopy.subheadline, stats: sanitizeStats(fixedCopy.stats),
               description: fixedCopy.description, bullets: fixedCopy.bullets,
-              cta: fixedCopy.cta, system, imageB64, format, palette, platform, postType: 'single',
+              cta: fixedCopy.cta, system, imageB64, format, palette, platform, postType: 'single', imageTone,
             });
             await query('UPDATE posts SET post_html=$1 WHERE id=$2', [fixedLayout.html, postId]);
             setStep('layout', 'done', { html: fixedLayout.html });
