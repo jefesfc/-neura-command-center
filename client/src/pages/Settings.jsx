@@ -1,21 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { Save, Check } from 'lucide-react';
+import { Save, Check, RotateCcw } from 'lucide-react';
 import { applyTheme } from '../theme';
 
 const COLOR_GROUPS = [
   {
-    title: 'Colores de fondo',
+    title: 'Fondos',
     keys: [
-      { key: 'color_primary', label: 'Fondo principal (Navy)', default: '#0b1e2d' },
-      { key: 'color_accent',  label: 'Color acento (Teal)',    default: '#1fa2b8' },
-      { key: 'color_gold',    label: 'Color gold',             default: '#c98a5a' },
+      { key: 'color_primary', label: 'Fondo principal',  default: '#f0ebe0' },
+      { key: 'color_card',    label: 'Fondo tarjetas',   default: '#ffffff'  },
+      { key: 'color_sidebar', label: 'Sidebar',          default: '#12100d'  },
     ],
   },
   {
-    title: 'Colores de texto',
+    title: 'Acentos',
     keys: [
-      { key: 'color_text',       label: 'Texto principal',  default: '#ffffff' },
-      { key: 'color_text_muted', label: 'Texto secundario', default: '#7fa3b8' },
+      { key: 'color_gold',   label: 'Gold (acento)',  default: '#c9a84c' },
+      { key: 'color_accent', label: 'Azul (acento 2)', default: '#2a7fa8' },
+    ],
+  },
+  {
+    title: 'Texto',
+    keys: [
+      { key: 'color_text',       label: 'Texto principal',  default: '#1a150a' },
+      { key: 'color_text_muted', label: 'Texto secundario', default: '#9e8e72' },
     ],
   },
 ];
@@ -75,11 +82,31 @@ export default function Settings() {
     setTimeout(() => setSaved(false), 2000);
   }
 
+  async function handleReset() {
+    const cleared = {
+      color_primary: null, color_card: null, color_sidebar: null,
+      color_gold: null, color_accent: null,
+      color_text: null, color_text_muted: null,
+    };
+    await fetch('/api/settings', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cleared),
+    });
+    setSettings(s => ({ ...s, ...cleared }));
+    window.location.reload();
+  }
+
   return (
     <div className="p-8 max-w-3xl mx-auto animate-fade-in">
-      <div className="mb-8">
-        <h1 className="font-display text-4xl font-bold text-white">Settings</h1>
-        <p className="text-white/40 mt-1 text-sm">Configuración de la aplicación</p>
+      <div className="mb-8 flex items-start justify-between">
+        <div>
+          <h1 className="font-display text-4xl font-bold" style={{ color: 'rgb(var(--color-text))' }}>Settings</h1>
+          <p className="mt-1 text-sm" style={{ color: 'rgb(var(--color-text-muted))' }}>Configuración de la aplicación</p>
+        </div>
+        <button onClick={handleReset} className="btn-secondary flex items-center gap-2 text-sm">
+          <RotateCcw size={14} /> Resetear tema
+        </button>
       </div>
 
       {/* Color groups */}
