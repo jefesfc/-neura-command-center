@@ -88,84 +88,114 @@ RULE #1 — ABSOLUTE: ZERO NUMBERS ANYWHERE
 Never output any digit, %, x, multiplier, timeframe, or numeric claim in any field.
 "80%", "3x", "24/7", "90 days", "2 years" — all forbidden. No exceptions.
 If the brief or context contains numbers, ignore them completely.
-stats.value must be a single qualitative word ONLY from this list:
-Structured · Consistent · Controlled · Precise · Automated · Systematic · Reliable · Scalable · Clear · Intelligent
+stats.value → single qualitative word ONLY: Structured · Consistent · Controlled · Precise · Automated · Systematic · Reliable · Scalable · Clear · Intelligent
 
 ═══════════════════════════════════════════
 ROLE
 ═══════════════════════════════════════════
-Execute the Creative Director's strategy with precision.
-Communicate value in under 3 seconds. Feel premium, high-ticket, B2B.
+Execute the Creative Director's strategy with precision and creative edge.
+Write copy that stops the scroll. Specific, sharp, B2B, premium.
 
 ═══════════════════════════════════════════
-OUTPUT CONSTRAINTS (MANDATORY)
+CREATIVE ANGLES (vary — never generic)
 ═══════════════════════════════════════════
-• headline      → max 55 chars · specific · no generic phrases
-• subheadline   → ONE line · max 70 chars · never two sentences or a paragraph
-• description   → ONE line · max 90 chars · never a paragraph
-• bullets       → 2-3 items only if genuinely needed · otherwise return []
-• cta           → max 35 chars · direct action verb
+Use contrast, tension, or a provocative truth. Examples:
+• Contrast:   "Your CRM tracks contacts. It doesn't close them."
+• Tension:    "Every lead you ignore is a deal your competitor takes."
+• Challenge:  "Most sales teams are optimizing the wrong thing."
+• Direct:     "Manual follow-up is killing your pipeline."
+• Reframe:    "You don't have a lead problem. You have a system problem."
 
 ═══════════════════════════════════════════
 TONE & WRITING RULES
 ═══════════════════════════════════════════
-Premium · Direct · B2B · Confident · Minimal
-No emojis · No fluff · No hype · No clichés · No paragraphs · Short lines only
+Premium · Confident · B2B · Minimal · Specific
+No emojis · No fluff · No hype · No clichés
 
 Bad:  "Boost your business with AI-powered growth solutions."
 Good: "Your sales team is talking to the wrong leads."
 
-Bad:  "Our platform helps you improve conversions and efficiency."
-Good: "Manual follow-up is costing you closed deals."
-
 Always return valid JSON only. No text outside the JSON.`;
 
-async function runCopyAgent({ brief, system, tone, postId, cdInstruction }) {
+async function runCopyAgent({ brief, system, tone, platform = 'Instagram', postId, cdInstruction }) {
   const systemBrief = SYSTEM_BRIEFS[system] || `System: ${system}`;
-  const systemLabel = SYSTEM_LABELS[system] || system;
   const model = process.env.OPENAI_MODEL_COPY || 'gpt-4o';
+  const isIG = (platform || 'Instagram').toLowerCase() === 'instagram';
+
+  // ── Platform-specific instructions and examples ─────────────────────────────
+  const platformRules = isIG ? `
+PLATFORM: Instagram — VISUAL FIRST
+The image is the hero. Text is minimal. Every word must earn its place.
+
+subheadline → HOOK: max 5 words, punchy tension-setter. NOT a sentence. Examples:
+  "YOUR SYSTEM IS BROKEN." / "LEADS DON'T CLOSE THEMSELVES." / "WRONG TOOL. WRONG RESULT."
+headline → THE BIG STATEMENT: max 6 words, dominates the frame visually. Bold truth.
+  Examples: "Your system does." / "Automate or fall behind." / "The pipeline runs itself."
+description → return "" (not displayed on Instagram)
+bullets → return [] (not displayed on Instagram)
+stats → 3 qualitative single words — shown as accent below the headline
+cta → max 30 chars, sharp action
+
+EXAMPLE:
+{
+  "headline": "Your system closes deals.",
+  "headline_accent": "closes deals",
+  "subheadline": "Your CRM doesn't.",
+  "stats": [
+    { "value": "Automated", "label": "Lead Flow" },
+    { "value": "Precise", "label": "Targeting" },
+    { "value": "Scalable", "label": "Pipeline" }
+  ],
+  "description": "",
+  "bullets": [],
+  "cta": "Book a strategy call",
+  "image_prompt": "Futuristic dark CRM dashboard with glowing pipeline nodes and AI scoring interface"
+}` : `
+PLATFORM: Facebook — EDITORIAL
+Users read. Tell a story. Hook → problem → solution → proof → action.
+
+subheadline → HOOK: 1 sharp line that creates tension. Max 60 chars.
+  Examples: "Your CRM doesn't close deals." / "Most businesses have tools, not systems."
+headline → BOLD TRUTH: strong serif statement, max 55 chars.
+description → 1 narrative sentence, max 90 chars. Sets up the solution.
+  Example: "We design AI systems that capture, qualify and convert leads — automatically."
+bullets → 2-3 specific outcome lines. Concrete, no fluff.
+  Example: ["Qualifies leads without human input", "Triggers follow-ups at the right moment", "Gives your team full pipeline visibility"]
+stats → 3 qualitative single words — shown inline as proof pillars
+cta → max 35 chars, direct
+
+EXAMPLE:
+{
+  "headline": "Your system does the selling.",
+  "headline_accent": "does the selling",
+  "subheadline": "Your CRM tracks contacts. It doesn't close them.",
+  "stats": [
+    { "value": "Automated", "label": "Lead Qualification" },
+    { "value": "Consistent", "label": "Follow-up" },
+    { "value": "Scalable", "label": "Revenue Growth" }
+  ],
+  "description": "We design AI systems that capture, qualify and convert leads — automatically.",
+  "bullets": [
+    "Qualifies leads without human input",
+    "Triggers follow-ups at the right moment",
+    "Gives your team full pipeline visibility"
+  ],
+  "cta": "Book a system strategy call",
+  "image_prompt": "Dark editorial workspace with holographic AI pipeline diagram and business team"
+}`;
 
   const userPrompt = `SYSTEM CONTEXT:
 ${systemBrief}
 
 CLIENT BRIEF: ${brief}
 TONE: ${tone || 'professional, premium, direct'}${cdInstruction ? `\nCREATIVE DIRECTOR STRATEGY:\n${cdInstruction}` : ''}
+${platformRules}
 
-Write high-impact social media copy in ENGLISH based on the system context above.
-stats.value must be qualitative single words only — no numbers, no % anywhere.
-image_prompt must match THIS post's topic specifically (CRM post → CRM scene, agents post → agents scene).
+Write high-impact copy in ENGLISH. Use a creative angle — contrast, tension, or a provocative truth. No generic phrases.
+stats.value must be qualitative single words only. No numbers anywhere.
+image_prompt: describe the specific visual scene for THIS topic — concrete, cinematic, dark and premium.
 
-EXAMPLE OF CORRECT OUTPUT:
-{
-  "headline": "Your CRM doesn't close deals.",
-  "headline_accent": "close deals",
-  "subheadline": "Build the system that does it for you.",
-  "stats": [
-    { "value": "Automated", "label": "Lead Scoring" },
-    { "value": "Consistent", "label": "Follow-up" },
-    { "value": "Scalable", "label": "Pipeline" }
-  ],
-  "description": "Stop managing contacts. Start closing on autopilot.",
-  "bullets": [],
-  "cta": "Book a strategy call →",
-  "image_prompt": "Dark command center with AI scoring nodes and pipeline flow diagram"
-}
-
-Return ONLY valid JSON matching this exact structure:
-{
-  "headline": "Bold, specific headline — max 55 chars",
-  "headline_accent": "1-3 key words from headline to highlight in teal — exact substring, same capitalisation",
-  "subheadline": "One sharp line expanding the promise — max 70 chars",
-  "stats": [
-    { "value": "QualitativeWord", "label": "2-3 word benefit label" },
-    { "value": "QualitativeWord", "label": "2-3 word benefit label" },
-    { "value": "QualitativeWord", "label": "2-3 word benefit label" }
-  ],
-  "description": "One line selling the core outcome — max 90 chars",
-  "bullets": [],
-  "cta": "Action CTA — max 35 chars",
-  "image_prompt": "Specific scene for this post topic — max 80 chars"
-}`;
+Return ONLY valid JSON with these exact fields: headline, headline_accent, subheadline, stats, description, bullets, cta, image_prompt`;
 
   const response = await client.chat.completions.create({
     model,

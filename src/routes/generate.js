@@ -171,7 +171,7 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
 
     // Step 1: Copy — enriched with CD instructions when available
     setStep('copy', 'running');
-    const copy = await runCopyAgent({ brief, system, tone, postId, cdInstruction: cd?.instructions?.copy_agent });
+    const copy = await runCopyAgent({ brief, system, tone, platform, postId, cdInstruction: cd?.instructions?.copy_agent });
     await query('UPDATE posts SET headline=$1, bullets=$2, cta=$3 WHERE id=$4',
       [copy.headline, JSON.stringify(copy.bullets), copy.cta, postId]);
     setStep('copy', 'done', { headline: copy.headline });
@@ -273,7 +273,7 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
           // Regenerate copy
           setStep('copy', 'running');
           const fixedCopy = await runCopyAgent({
-            brief: `${brief}\n\nREVISION: ${note}`, system, tone, postId,
+            brief: `${brief}\n\nREVISION: ${note}`, system, tone, platform, postId,
             cdInstruction: cd?.instructions?.copy_agent,
           });
           await query('UPDATE posts SET headline=$1, bullets=$2, cta=$3 WHERE id=$4',
