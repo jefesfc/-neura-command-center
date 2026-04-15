@@ -279,6 +279,11 @@ body { color: rgb(var(--color-text)); }
 [data-block-anim="glow-border"] .card:nth-child(3),
 [data-block-anim="glow-border"] .card-3d:nth-child(3) { animation-delay: .8s; }
 
+/* ── Theme-aware text utilities ─────────────────────────── */
+/* Use these instead of text-white on light-theme pages     */
+.text-theme       { color: rgb(var(--color-text)); }
+.text-theme-muted { color: rgb(var(--color-text-muted)); }
+
 /* ── Scrollbar ──────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }

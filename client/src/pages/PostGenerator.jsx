@@ -300,7 +300,7 @@ export default function PostGenerator() {
           className={`flex-1 py-2 rounded-lg border text-xs font-medium transition-all ${
             value === o.value
               ? 'border-teal/50 bg-teal/10 text-teal'
-              : 'border-white/10 text-white/40 hover:border-white/20'
+              : 'border-black/10 text-theme-muted hover:border-black/20'
           }`}
         >{o.label}</button>
       ))}
@@ -310,8 +310,8 @@ export default function PostGenerator() {
   return (
     <div className="p-8 max-w-6xl mx-auto animate-fade-in">
       <div className="mb-8">
-        <h1 className="font-display text-4xl font-bold text-white">Post Generator</h1>
-        <p className="text-white/40 mt-1 text-sm">Creative Director → Copy → Image → Layout → Caption</p>
+        <h1 className="font-display text-4xl font-bold text-theme">Post Generator</h1>
+        <p className="text-theme-muted mt-1 text-sm">Creative Director → Copy → Image → Layout → Caption</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -319,7 +319,7 @@ export default function PostGenerator() {
         {/* ── LEFT: FORM ── */}
         <div className="space-y-4">
           <div className="card">
-            <h2 className="font-display text-xl font-semibold text-white mb-6">Create Content</h2>
+            <h2 className="font-display text-xl font-semibold text-theme mb-6">Create Content</h2>
             <div className="space-y-5">
 
               {/* 1. Main Request */}
@@ -371,12 +371,12 @@ export default function PostGenerator() {
                           : 'border-white/10 hover:border-white/20'
                       }`}
                     >
-                      <div className={`text-sm font-semibold mb-0.5 ${layoutStyle === s.value ? 'text-white' : 'text-white/50'}`}>
+                      <div className={`text-sm font-semibold mb-0.5 ${layoutStyle === s.value ? 'text-theme' : 'text-theme-muted'}`}>
                         {s.label}
                       </div>
-                      <div className="text-[10px] text-white/30 leading-snug">{s.desc}</div>
+                      <div className="text-[10px] text-theme-muted leading-snug">{s.desc}</div>
                       <div className={`text-[9px] mt-1.5 font-mono uppercase tracking-wider ${
-                        layoutStyle === s.value ? 'text-teal/60' : 'text-white/20'
+                        layoutStyle === s.value ? 'text-teal/60' : 'text-theme-muted opacity-50'
                       }`}>{s.tag}</div>
                     </button>
                   ))}
@@ -387,7 +387,7 @@ export default function PostGenerator() {
               <div>
                 <button
                   onClick={() => setShowContext(v => !v)}
-                  className="flex items-center gap-2 text-white/40 hover:text-white/60 text-xs font-medium transition-all"
+                  className="flex items-center gap-2 text-theme-muted hover:text-theme text-xs font-medium transition-all"
                 >
                   <Plus size={12} className={`transition-transform duration-200 ${showContext ? 'rotate-45' : ''}`} />
                   Optional Context
@@ -477,8 +477,8 @@ export default function PostGenerator() {
                               className="accent-teal flex-shrink-0"
                             />
                             <div>
-                              <div className="text-white text-xs font-semibold">{style.label}</div>
-                              <div className="text-white/40 text-[10px] mt-0.5">{style.desc}</div>
+                              <div className="text-theme text-xs font-semibold">{style.label}</div>
+                              <div className="text-theme-muted text-[10px] mt-0.5">{style.desc}</div>
                             </div>
                           </label>
                         ))}
@@ -506,7 +506,7 @@ export default function PostGenerator() {
           {/* Progress */}
           {(phase === 'generating' || phase === 'done') && (
             <div className="card">
-              <h2 className="font-display text-xl font-semibold text-white mb-4">Progress</h2>
+              <h2 className="font-display text-xl font-semibold text-theme mb-4">Progress</h2>
               <div className="space-y-2">
                 {activeSteps.map(step => (
                   <ProgressStep key={step} step={step} state={steps[step]} />
@@ -528,7 +528,7 @@ export default function PostGenerator() {
             <>
               <div className="card">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-display text-xl font-semibold text-white">
+                  <h2 className="font-display text-xl font-semibold text-theme">
                     {isCarousel ? `Carousel — Slide ${slideIdx + 1}/${slides.length}` : 'Preview'}
                   </h2>
                   <div className="flex items-center gap-2">
@@ -538,7 +538,7 @@ export default function PostGenerator() {
                 </div>
 
                 <div
-                  className="overflow-hidden rounded-lg border border-white/10 mx-auto"
+                  className="overflow-hidden rounded-lg border border-black/10 mx-auto"
                   style={{ width: Math.round(size.w * previewScale), height: Math.round(size.h * previewScale) }}
                 >
                   <iframe
@@ -592,12 +592,12 @@ export default function PostGenerator() {
               {post?.caption && (
                 <div className="card">
                   <div className="flex items-center justify-between mb-3">
-                    <h2 className="font-display text-xl font-semibold text-white">Caption</h2>
+                    <h2 className="font-display text-xl font-semibold text-theme">Caption</h2>
                     <button onClick={handleCopyCaption} className="btn-secondary px-3 py-2 text-xs">
                       {copied ? <><Check size={14} /> Copied</> : <><Copy size={14} /> Copy</>}
                     </button>
                   </div>
-                  <p className="text-white/70 text-sm leading-relaxed whitespace-pre-wrap">{post.caption}</p>
+                  <p className="text-theme text-sm leading-relaxed whitespace-pre-wrap">{post.caption}</p>
                   <p className="text-teal/60 text-xs mt-3 leading-loose">{post.hashtags}</p>
                   <button onClick={handleMarkReady} className="btn-gold w-full justify-center mt-4">
                     <Check size={16} /> Mark as Ready
@@ -608,8 +608,8 @@ export default function PostGenerator() {
           ) : (
             <div className="card h-80 flex items-center justify-center">
               <div className="text-center">
-                <Wand2 size={40} className="text-white/10 mx-auto mb-3" />
-                <p className="text-white/20 text-sm">Generated post will appear here</p>
+                <Wand2 size={40} className="text-theme-muted mx-auto mb-3 opacity-20" />
+                <p className="text-theme-muted text-sm">Generated post will appear here</p>
               </div>
             </div>
           )}

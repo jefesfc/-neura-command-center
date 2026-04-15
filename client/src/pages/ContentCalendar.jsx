@@ -39,12 +39,12 @@ export default function ContentCalendar() {
     <div className="p-8 max-w-5xl mx-auto animate-fade-in">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="font-display text-4xl font-bold text-white">Calendario de Contenido</h1>
-          <p className="text-white/40 mt-1 text-sm">Posts creados por fecha</p>
+          <h1 className="font-display text-4xl font-bold text-theme">Calendario de Contenido</h1>
+          <p className="text-theme-muted mt-1 text-sm">Posts creados por fecha</p>
         </div>
         <div className="flex items-center gap-3">
           <button onClick={prevMonth} className="btn-secondary px-3 py-2"><ChevronLeft size={16} /></button>
-          <span className="font-display text-xl font-semibold text-white min-w-[180px] text-center">
+          <span className="font-display text-xl font-semibold text-theme min-w-[180px] text-center">
             {MONTHS[month]} {year}
           </span>
           <button onClick={nextMonth} className="btn-secondary px-3 py-2"><ChevronRight size={16} /></button>
@@ -72,11 +72,11 @@ export default function ContentCalendar() {
                 className={`h-20 p-1.5 rounded-lg border cursor-pointer transition-all ${
                   dayPosts.length > 0
                     ? 'border-teal/30 bg-teal/5 hover:bg-teal/10'
-                    : 'border-white/5 hover:border-white/10'
+                    : 'border-black/8 hover:border-black/15'
                 } ${isToday ? 'ring-1 ring-teal/40' : ''}`}
                 onClick={() => setSelected(dayPosts.length > 0 ? { day, posts: dayPosts } : null)}
               >
-                <div className={`text-xs font-medium mb-1 ${isToday ? 'text-teal' : 'text-white/40'}`}>{day}</div>
+                <div className={`text-xs font-medium mb-1 ${isToday ? 'text-teal' : 'text-theme-muted'}`}>{day}</div>
                 <div className="space-y-0.5">
                   {dayPosts.slice(0, 2).map(p => (
                     <div key={p.id} className={`text-[10px] truncate px-1 rounded badge-${p.status}`}>
@@ -84,7 +84,7 @@ export default function ContentCalendar() {
                     </div>
                   ))}
                   {dayPosts.length > 2 && (
-                    <div className="text-[10px] text-white/30 px-1">+{dayPosts.length - 2} más</div>
+                    <div className="text-[10px] text-theme-muted px-1">+{dayPosts.length - 2} más</div>
                   )}
                 </div>
               </div>
@@ -104,13 +104,13 @@ export default function ContentCalendar() {
               <div key={p.id} className="flex gap-3 p-3 bg-navy rounded-lg border border-white/8">
                 {p.png_url && <img src={p.png_url} alt="" className="w-14 h-14 rounded object-cover shrink-0" />}
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-white/80 truncate">{p.headline || 'Sin título'}</div>
+                  <div className="text-sm font-medium text-theme truncate">{p.headline || 'Sin título'}</div>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="font-mono text-[10px] text-white/30">{p.system}</span>
+                    <span className="font-mono text-[10px] text-theme-muted">{p.system}</span>
                     <span className={`badge-${p.status}`}>{p.status}</span>
                   </div>
                   {p.caption && (
-                    <p className="text-[11px] text-white/40 mt-1 line-clamp-2">{p.caption}</p>
+                    <p className="text-[11px] text-theme-muted mt-1 line-clamp-2">{p.caption}</p>
                   )}
                 </div>
               </div>

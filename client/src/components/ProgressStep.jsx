@@ -15,42 +15,70 @@ export default function ProgressStep({ step, state }) {
   const label = STEP_LABELS[step] || step;
   const { status } = state || {};
 
+  const borderColor =
+    status === 'running' ? 'rgba(42,127,168,0.35)' :
+    status === 'done'    ? 'rgba(26,21,10,0.08)' :
+    status === 'skipped' ? 'rgba(26,21,10,0.05)' :
+    'rgba(26,21,10,0.06)';
+
+  const bgColor =
+    status === 'running' ? 'rgba(42,127,168,0.06)' :
+    status === 'done'    ? 'rgba(26,21,10,0.02)' :
+    'transparent';
+
+  const labelColor =
+    status === 'running' ? 'rgb(var(--tw-teal))' :
+    status === 'done'    ? 'rgb(var(--color-text))' :
+    'rgb(var(--color-text-muted))';
+
   return (
-    <div className={`flex items-start gap-4 p-4 rounded-lg border transition-all duration-300 ${
-      status === 'running' ? 'border-teal/40 bg-teal/5' :
-      status === 'done' ? 'border-white/10 bg-white/3' :
-      status === 'skipped' ? 'border-white/5 bg-white/2' :
-      'border-white/5'
-    }`}>
-      <div className="mt-0.5 shrink-0">
-        {status === 'running' && <Loader2 size={18} className="text-teal animate-spin" />}
-        {status === 'done' && <Check size={18} className="text-teal" />}
-        {status === 'skipped' && <SkipForward size={18} className="text-white/30" />}
-        {status === 'error' && <AlertCircle size={18} className="text-red-400" />}
-        {!status && <div className="w-4.5 h-4.5 rounded-full border border-white/20" />}
+    <div style={{
+      display: 'flex', alignItems: 'flex-start', gap: '16px',
+      padding: '14px 16px', borderRadius: '10px',
+      border: `1px solid ${borderColor}`,
+      background: bgColor,
+      transition: 'all 0.3s',
+    }}>
+      <div style={{ marginTop: '2px', flexShrink: 0 }}>
+        {status === 'running' && <Loader2 size={18} className="animate-spin" style={{ color: 'rgb(var(--tw-teal))' }} />}
+        {status === 'done'    && <Check size={18} style={{ color: 'rgb(var(--tw-teal))' }} />}
+        {status === 'skipped' && <SkipForward size={18} style={{ color: 'rgb(var(--color-text-muted))' }} />}
+        {status === 'error'   && <AlertCircle size={18} style={{ color: '#b85050' }} />}
+        {!status && (
+          <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: '1.5px solid rgba(26,21,10,0.18)' }} />
+        )}
       </div>
-      <div className="flex-1 min-w-0">
-        <div className={`text-sm font-medium ${
-          status === 'running' ? 'text-teal' :
-          status === 'done' ? 'text-white/80' :
-          'text-white/30'
-        }`}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: '13px', fontWeight: 500, color: labelColor }}>
           {label}
         </div>
         {status === 'running' && (
-          <div className="text-xs text-white/40 mt-0.5 animate-pulse-teal">Procesando...</div>
+          <div style={{ fontSize: '11px', color: 'rgb(var(--color-text-muted))', marginTop: '2px' }}
+            className="animate-pulse-teal">
+            Procesando...
+          </div>
         )}
         {status === 'done' && state.content_angle && (
-          <div className="text-xs text-white/40 mt-0.5 truncate italic">"{state.content_angle}"</div>
+          <div style={{ fontSize: '11px', color: 'rgb(var(--color-text-muted))', marginTop: '2px', fontStyle: 'italic' }}
+            className="truncate">
+            "{state.content_angle}"
+          </div>
         )}
         {status === 'done' && state.headline && (
-          <div className="text-xs text-white/40 mt-0.5 truncate">"{state.headline}"</div>
+          <div style={{ fontSize: '11px', color: 'rgb(var(--color-text-muted))', marginTop: '2px' }}
+            className="truncate">
+            "{state.headline}"
+          </div>
         )}
         {status === 'done' && state.pngUrl && (
-          <div className="text-xs text-teal/60 mt-0.5">PNG generado</div>
+          <div style={{ fontSize: '11px', color: 'rgb(var(--tw-teal))', marginTop: '2px', opacity: 0.7 }}>
+            PNG generado
+          </div>
         )}
         {status === 'skipped' && state.warning && (
-          <div className="text-xs text-yellow-400/60 mt-0.5">{state.warning}</div>
+          <div style={{ fontSize: '11px', color: 'rgba(180,140,50,0.8)', marginTop: '2px' }}>
+            {state.warning}
+          </div>
         )}
       </div>
     </div>

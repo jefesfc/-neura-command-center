@@ -112,7 +112,7 @@ export default function Settings() {
       {/* Color groups */}
       {COLOR_GROUPS.map(group => (
         <div key={group.title} className="card mb-6">
-          <h2 className="font-display text-xl font-semibold text-white mb-5">{group.title}</h2>
+          <h2 className="font-display text-xl font-semibold text-theme mb-5">{group.title}</h2>
           <div className="space-y-4">
             {group.keys.map(({ key, label, default: def }) => (
               <div key={key} className="flex items-center gap-4">
@@ -152,8 +152,8 @@ export default function Settings() {
 
       {/* Text animations */}
       <div className="card mb-6">
-        <h2 className="font-display text-xl font-semibold text-white mb-2">Animación de títulos</h2>
-        <p className="text-white/30 text-xs mb-5">Efecto aplicado a los headings (H1, H2) de la app</p>
+        <h2 className="font-display text-xl font-semibold text-theme mb-2">Animación de títulos</h2>
+        <p className="text-theme-muted text-xs mb-5">Efecto aplicado a los headings (H1, H2) de la app</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {TEXT_ANIMATIONS.map(anim => (
             <button
@@ -184,8 +184,8 @@ export default function Settings() {
 
       {/* Block animations */}
       <div className="card mb-6">
-        <h2 className="font-display text-xl font-semibold text-white mb-2">Animación de bloques</h2>
-        <p className="text-white/30 text-xs mb-5">Efecto de entrada para las cards al cargar cada página</p>
+        <h2 className="font-display text-xl font-semibold text-theme mb-2">Animación de bloques</h2>
+        <p className="text-theme-muted text-xs mb-5">Efecto de entrada para las cards al cargar cada página</p>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {BLOCK_ANIMATIONS.map(anim => (
             <button
@@ -208,7 +208,7 @@ export default function Settings() {
 
       {/* Models */}
       <div className="card mb-6">
-        <h2 className="font-display text-xl font-semibold text-white mb-5">Modelos de IA</h2>
+        <h2 className="font-display text-xl font-semibold text-theme mb-5">Modelos de IA</h2>
         <div className="space-y-4">
           {MODEL_KEYS.map(({ key, label }) => (
             <div key={key}>
@@ -226,7 +226,7 @@ export default function Settings() {
 
       {/* n8n Webhook */}
       <div className="card mb-6">
-        <h2 className="font-display text-xl font-semibold text-white mb-5">n8n Webhook</h2>
+        <h2 className="font-display text-xl font-semibold text-theme mb-5">n8n Webhook</h2>
         <div>
           <label className="label mb-2 block">URL del webhook</label>
           <input
@@ -245,8 +245,8 @@ export default function Settings() {
 
       {/* System info */}
       <div className="mt-8 card bg-navy-dark/50">
-        <h2 className="font-display text-lg font-semibold text-white mb-3">Sistema</h2>
-        <div className="space-y-2 font-mono text-xs text-white/30">
+        <h2 className="font-display text-lg font-semibold text-theme mb-3">Sistema</h2>
+        <div className="space-y-2 font-mono text-xs text-theme-muted">
           <div className="flex justify-between"><span>Dominio</span><span>neuracenter.neurasolutions.cloud</span></div>
           <div className="flex justify-between"><span>Deploy</span><span>Easypanel → main branch</span></div>
           <div className="flex justify-between"><span>DB</span><span>neura_command_center (Postgres)</span></div>
