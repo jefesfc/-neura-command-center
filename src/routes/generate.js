@@ -1,7 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
+const path = require('path');
+const fs = require('fs');
 const { query } = require('../db');
+
+const POST_IMAGES_DIR = path.join(__dirname, '../post-images');
+
+function saveImageToDisk(postId, imageB64) {
+  try {
+    if (!imageB64) return;
+    const buf = Buffer.from(imageB64, 'base64');
+    fs.writeFileSync(path.join(POST_IMAGES_DIR, `${postId}.jpg`), buf);
+  } catch (e) {
+    console.warn('[saveImageToDisk] failed:', e.message);
+  }
+}
 const { runCopyAgent } = require('../agents/copyAgent');
 const { runImageAgent } = require('../agents/imageAgent');
 const { runLayoutAgent } = require('../agents/layoutAgent');
@@ -109,6 +123,7 @@ router.post('/step', async (req, res) => {
       const prompt = imagePrompt || `${post.headline} ${post.brief}`;
       const { imageB64 } = await runImageAgent({ imagePrompt: prompt, aspectRatio: post.format, system: post.system, postId });
       await query('UPDATE posts SET image_b64=$1, updated_at=NOW() WHERE id=$2', [imageB64, postId]);
+      saveImageToDisk(postId, imageB64);
       return res.json({ ok: true, imageB64 });
     }
 
@@ -183,6 +198,7 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
     try {
       ({ imageB64, imageTone } = await runImageAgent({ imagePrompt: copy.image_prompt, aspectRatio: format, system, imageStyle, postId, cdInstruction: cd?.instructions?.image_agent }));
       await query('UPDATE posts SET image_b64=$1 WHERE id=$2', [imageB64, postId]);
+      saveImageToDisk(postId, imageB64);
       setStep('image', 'done');
     } catch (err) {
       setStep('image', 'skipped', { warning: err.message });
