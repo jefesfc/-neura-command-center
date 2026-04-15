@@ -51,19 +51,26 @@ export default function Sidebar() {
       }} />
 
       {/* Logo */}
-      <div style={{ padding: '26px 22px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{
-          fontFamily: '"Cormorant Garamond", serif',
-          fontSize: '21px', fontWeight: 700, color: '#fff', letterSpacing: '-.01em',
-        }}>
-          Neura<span style={{ color: 'rgb(var(--tw-gold))' }}>·</span>Solutions
-        </div>
-        <div style={{
-          fontFamily: '"DM Mono", monospace', fontSize: '9px',
-          color: 'rgba(201,168,76,0.42)', letterSpacing: '.22em',
-          textTransform: 'uppercase', marginTop: '7px',
-        }}>
-          Command Center
+      <div style={{ padding: '20px 22px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <img
+          src="/logo.png"
+          alt="Neura Solutions"
+          style={{ width: '36px', height: '36px', objectFit: 'contain', flexShrink: 0 }}
+        />
+        <div>
+          <div style={{
+            fontFamily: '"Cormorant Garamond", serif',
+            fontSize: '19px', fontWeight: 700, color: '#fff', letterSpacing: '-.01em',
+          }}>
+            Neura<span style={{ color: 'rgb(var(--tw-gold))' }}>·</span>Solutions
+          </div>
+          <div style={{
+            fontFamily: '"DM Mono", monospace', fontSize: '8px',
+            color: 'rgba(201,168,76,0.42)', letterSpacing: '.22em',
+            textTransform: 'uppercase', marginTop: '3px',
+          }}>
+            Command Center
+          </div>
         </div>
       </div>
 
