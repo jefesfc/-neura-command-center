@@ -1,8 +1,7 @@
-import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Wand2, CalendarDays,
-  Images, BarChart3, Settings, ChevronRight, Search
+  Images, BarChart3, Settings, Search, ChevronRight,
 } from 'lucide-react';
 
 const nav = [
@@ -10,76 +9,143 @@ const nav = [
   {
     label: 'Social Studio',
     children: [
-      { label: 'Post Generator', to: '/studio/generator', icon: Wand2 },
-      { label: 'Calendario', to: '/studio/calendar', icon: CalendarDays },
+      { label: 'Post Generator', to: '/studio/generator', icon: Wand2, badge: 'AI' },
+      { label: 'Calendario',    to: '/studio/calendar',  icon: CalendarDays },
     ],
   },
-  { label: 'Post Library', to: '/library', icon: Images },
-  { label: 'Prospector', to: '/prospector', icon: Search },
-  { label: 'Analytics', to: '/analytics', icon: BarChart3 },
-  { label: 'Settings', to: '/settings', icon: Settings },
+  {
+    label: 'Contenido',
+    children: [
+      { label: 'Post Library', to: '/library',    icon: Images },
+      { label: 'Prospector',   to: '/prospector', icon: Search },
+    ],
+  },
+  {
+    label: 'Sistema',
+    children: [
+      { label: 'Analytics', to: '/analytics', icon: BarChart3 },
+      { label: 'Settings',  to: '/settings',  icon: Settings  },
+    ],
+  },
 ];
 
 export default function Sidebar() {
   const location = useLocation();
 
   return (
-    <aside className="w-56 shrink-0 flex flex-col bg-navy-dark border-r border-white/8 h-screen sticky top-0">
+    <aside
+      className="w-56 shrink-0 flex flex-col h-screen sticky top-0"
+      style={{
+        background: 'rgb(var(--tw-navy-dark))',
+        borderRight: '1px solid rgba(255,255,255,0.06)',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Glow orb top */}
+      <div style={{
+        position: 'absolute', top: '-60px', left: '-40px',
+        width: '220px', height: '220px', borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(201,168,76,0.15) 0%, transparent 70%)',
+        pointerEvents: 'none',
+      }} />
+
       {/* Logo */}
-      <div className="px-6 py-6 border-b border-white/10">
-        <img src="/logo.png" alt="Neura" className="h-8 w-auto object-contain" />
-        <div className="font-mono text-[10px] text-white/30 tracking-[0.2em] uppercase mt-2">
+      <div style={{ padding: '26px 22px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{
+          fontFamily: '"Cormorant Garamond", serif',
+          fontSize: '21px', fontWeight: 700, color: '#fff', letterSpacing: '-.01em',
+        }}>
+          Neura<span style={{ color: 'rgb(var(--tw-gold))' }}>·</span>Solutions
+        </div>
+        <div style={{
+          fontFamily: '"DM Mono", monospace', fontSize: '9px',
+          color: 'rgba(201,168,76,0.42)', letterSpacing: '.22em',
+          textTransform: 'uppercase', marginTop: '7px',
+        }}>
           Command Center
         </div>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-1">
+      <nav style={{ flex: 1, padding: '14px 10px', overflowY: 'auto' }}>
         {nav.map((item) => {
           if (item.children) {
-            const isGroupActive = item.children.some(c => location.pathname.startsWith(c.to));
             return (
-              <div key={item.label}>
-                <div className="px-3 py-2 flex items-center justify-between">
-                  <span className="label text-[10px]">{item.label}</span>
-                  <ChevronRight size={12} className="text-white/20" />
+              <div key={item.label} style={{ marginBottom: '4px' }}>
+                <div style={{
+                  fontFamily: '"DM Mono", monospace', fontSize: '9px',
+                  color: 'rgba(255,255,255,0.2)', letterSpacing: '.2em',
+                  textTransform: 'uppercase', padding: '12px 10px 6px',
+                }}>
+                  {item.label}
                 </div>
-                <div className="ml-2 space-y-0.5">
-                  {item.children.map(child => (
-                    <NavItem key={child.to} {...child} />
-                  ))}
-                </div>
+                {item.children.map(child => (
+                  <NavItem key={child.to} {...child} />
+                ))}
               </div>
             );
           }
-          return <NavItem key={item.to} {...item} />;
+          return <NavItem key={item.to} {...item} style={{ marginBottom: '2px' }} />;
         })}
       </nav>
 
       {/* Bottom */}
-      <div className="px-6 py-4 border-t border-white/8">
-        <div className="font-mono text-[10px] text-white/20 tracking-wider">
+      <div style={{
+        padding: '14px 22px', borderTop: '1px solid rgba(255,255,255,0.05)',
+      }}>
+        <span style={{
+          fontFamily: '"DM Mono", monospace', fontSize: '9px',
+          color: 'rgba(255,255,255,0.18)', letterSpacing: '.14em',
+        }}>
           neurasolutions.cloud
-        </div>
+        </span>
       </div>
     </aside>
   );
 }
 
-function NavItem({ to, icon: Icon, label }) {
+function NavItem({ to, icon: Icon, label, badge }) {
   return (
     <NavLink
       to={to}
-      className={({ isActive }) =>
-        `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-150 ${
-          isActive
-            ? 'bg-teal/15 text-teal font-medium'
-            : 'text-white/50 hover:text-white/80 hover:bg-white/5'
-        }`
-      }
+      style={({ isActive }) => ({
+        display: 'flex', alignItems: 'center', gap: '9px',
+        padding: '8px 10px', borderRadius: '8px', marginBottom: '2px',
+        fontSize: '13px', fontWeight: isActive ? 500 : 400,
+        textDecoration: 'none', transition: 'all .15s',
+        position: 'relative',
+        color: isActive ? 'rgb(var(--tw-gold))' : 'rgba(255,255,255,0.42)',
+        background: isActive ? 'rgba(201,168,76,0.12)' : 'transparent',
+        border: isActive ? '1px solid rgba(201,168,76,0.18)' : '1px solid transparent',
+      })}
     >
-      <Icon size={16} />
-      <span>{label}</span>
+      {({ isActive }) => (
+        <>
+          {/* Left accent bar */}
+          {isActive && (
+            <div style={{
+              position: 'absolute', left: '-1px', top: '22%', bottom: '22%',
+              width: '2px',
+              background: 'linear-gradient(180deg, rgb(var(--tw-gold-light)), rgb(var(--tw-gold-dark)))',
+              borderRadius: '0 2px 2px 0',
+            }} />
+          )}
+          <Icon size={14} style={{ opacity: isActive ? 1 : 0.6, flexShrink: 0 }} />
+          <span style={{ flex: 1 }}>{label}</span>
+          {badge && (
+            <span style={{
+              fontFamily: '"DM Mono", monospace', fontSize: '8px',
+              background: 'rgba(201,168,76,0.15)',
+              color: 'rgb(var(--tw-gold))',
+              border: '1px solid rgba(201,168,76,0.28)',
+              padding: '1px 6px', borderRadius: '10px', letterSpacing: '.1em',
+            }}>
+              {badge}
+            </span>
+          )}
+        </>
+      )}
     </NavLink>
   );
 }
