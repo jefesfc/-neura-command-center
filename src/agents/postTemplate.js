@@ -83,13 +83,21 @@ function sanitizeWord(val) {
   return (val || '').replace(/[^a-zA-ZÀ-ÿ\s]/g, '').trim();
 }
 
+// Words too short or functional to accent — highlighting "the", "with", "a" looks broken
+const STOP_WORDS = new Set([
+  'the','a','an','of','for','in','with','and','or','but','to','at','by',
+  'from','as','is','it','its','on','this','that','are','was','were','be',
+  'been','not','no','so','do','does','did','your','our','their','we','you',
+]);
+
 function applyAccent(headline, headline_accent, accentColor) {
   if (!headline) return '';
-  if (headline_accent && headline.includes(headline_accent)) {
-    const i = headline.indexOf(headline_accent);
+  const word = (headline_accent || '').trim();
+  if (word && headline.includes(word) && !STOP_WORDS.has(word.toLowerCase()) && word.length > 2) {
+    const i = headline.indexOf(word);
     return esc(headline.slice(0, i))
-      + `<span style="color:${accentColor}">${esc(headline_accent)}</span>`
-      + esc(headline.slice(i + headline_accent.length));
+      + `<span style="color:${accentColor}">${esc(word)}</span>`
+      + esc(headline.slice(i + word.length));
   }
   return esc(headline);
 }
@@ -171,13 +179,14 @@ function buildInstagramHTML({ headline, headline_accent, subheadline, cta, syste
   const headlineHtml = applyAccent(headline, headline_accent, p.accent);
 
   // Adaptive H1 size — shorter headline = bigger type
+  // Sizes tuned for 1080px canvas: must feel MASSIVE, not body text
   const charCount = (headline || '').length;
   const h1Size = isStory
-    ? (charCount > 34 ? '82px' : charCount > 22 ? '106px' : '128px')
-    : (charCount > 34 ? '52px' : charCount > 22 ? '68px' : '84px');
+    ? (charCount > 36 ? '90px' : charCount > 24 ? '116px' : '140px')
+    : (charCount > 36 ? '68px' : charCount > 24 ? '88px' : '110px');
 
   const hook = subheadline ? subheadline.toUpperCase() : '';
-  const pad  = isStory ? { top: 70, side: 78, bottom: 74 } : { top: 52, side: 62, bottom: 60 };
+  const pad  = isStory ? { top: 70, side: 80, bottom: 76 } : { top: 52, side: 64, bottom: 62 };
 
   // Hairline y-position — stages the image above, text zone below
   const hairlineY = isStory ? 57 : 55;
@@ -192,8 +201,9 @@ function buildInstagramHTML({ headline, headline_accent, subheadline, cta, syste
   <!-- Layer 2: Cinematic gradient — transparent top reveals image, near-black bottom anchors text -->
   <div style="position:absolute;inset:0;background:linear-gradient(to bottom,
     ${p.overlayTop} 0%,
-    rgba(0,0,0,0.04) 20%,
-    ${p.overlayMid} 48%,
+    rgba(0,0,0,0.06) 18%,
+    ${p.overlayMid} 40%,
+    rgba(7,18,28,0.82) 58%,
     ${p.overlayBot} 100%
   );"></div>
 
@@ -222,7 +232,7 @@ function buildInstagramHTML({ headline, headline_accent, subheadline, cta, syste
     ${accentLineEl(p, isStory)}
 
     <!-- HOOK — 4–5 words, maximum tension, DM Mono small caps -->
-    ${hook ? `<div style="font-family:'DM Mono',monospace;font-size:${isStory ? '17px' : '10px'};color:${p.accent};letter-spacing:0.24em;text-transform:uppercase;margin-bottom:${isStory ? '20px' : '12px'};text-shadow:0 1px 6px rgba(0,0,0,0.80);">${esc(hook)}</div>` : ''}
+    ${hook ? `<div style="font-family:'DM Mono',monospace;font-size:${isStory ? '20px' : '13px'};color:${p.accent};letter-spacing:0.22em;text-transform:uppercase;margin-bottom:${isStory ? '22px' : '14px'};text-shadow:0 1px 8px rgba(0,0,0,0.90);">${esc(hook)}</div>` : ''}
 
     <!-- H1 — massive Cormorant Garamond, dominates the bottom of the frame -->
     <h1 style="font-family:'Cormorant Garamond',serif;font-size:${h1Size};font-weight:700;line-height:1.01;color:${p.text};letter-spacing:-0.022em;text-shadow:0 3px 24px rgba(0,0,0,0.90),0 1px 6px rgba(0,0,0,0.60);margin-bottom:${isStory ? '42px' : '26px'};">${headlineHtml}</h1>
@@ -264,8 +274,8 @@ function buildFacebookHTML({ headline, headline_accent, subheadline, stats, desc
 
   const charCount = (headline || '').length;
   const h1Size = isStory
-    ? (charCount > 40 ? '64px' : charCount > 28 ? '80px' : '96px')
-    : (charCount > 40 ? '40px' : charCount > 28 ? '52px' : '64px');
+    ? (charCount > 40 ? '76px' : charCount > 28 ? '94px' : '112px')
+    : (charCount > 40 ? '52px' : charCount > 28 ? '66px' : '80px');
 
   // Bullets with teal dot
   const bulletsHtml = Array.isArray(bullets) && bullets.length > 0
