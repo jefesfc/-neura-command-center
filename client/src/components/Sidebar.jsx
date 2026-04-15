@@ -55,7 +55,7 @@ export default function Sidebar() {
         <img
           src="/logo.png"
           alt="Neura Solutions"
-          style={{ width: '43px', height: '43px', objectFit: 'contain' }}
+          style={{ width: '86px', height: '86px', objectFit: 'contain' }}
         />
         <div style={{
             fontFamily: '"DM Mono", monospace', fontSize: '8px',
