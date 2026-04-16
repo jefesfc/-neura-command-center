@@ -10,7 +10,7 @@ if (!fs.existsSync(SOCIAL_POSTS_DIR)) fs.mkdirSync(SOCIAL_POSTS_DIR, { recursive
 // GET all posts (with optional filters)
 router.get('/', async (req, res) => {
   const { status, system, limit = 50, offset = 0 } = req.query;
-  let sql = 'SELECT id, title, headline, bullets, cta, tone, system, format, caption, hashtags, status, image_b64, png_path, post_type, slides, palette, created_at, updated_at FROM posts';
+  let sql = 'SELECT id, title, headline, bullets, cta, tone, system, format, caption, hashtags, status, png_path, post_type, slides, palette, created_at, updated_at FROM posts';
   const params = [];
   const conditions = [];
 
@@ -22,6 +22,16 @@ router.get('/', async (req, res) => {
 
   const result = await query(sql, params);
   res.json(result.rows);
+});
+
+// GET raw AI image for a post (served as JPEG from DB — persistent across deploys)
+router.get('/:id/image', async (req, res) => {
+  const result = await query('SELECT image_b64 FROM posts WHERE id = $1', [req.params.id]);
+  if (!result.rows.length || !result.rows[0].image_b64) return res.status(404).end();
+  const buf = Buffer.from(result.rows[0].image_b64, 'base64');
+  res.set('Content-Type', 'image/jpeg');
+  res.set('Cache-Control', 'public, max-age=86400');
+  res.send(buf);
 });
 
 // GET single post
