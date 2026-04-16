@@ -141,8 +141,8 @@ export default function PostGenerator() {
     setSlideIdx(0);
 
     const langNote = briefLang === 'es'
-      ? '\n\n[IDIOMA: Todo el copy, titular, descripción, CTA y caption deben estar en ESPAÑOL.]'
-      : '\n\n[LANGUAGE: All copy, headline, description, CTA and caption must be in ENGLISH.]';
+      ? '\n\n[NOTE: The brief above is written in Spanish. Translate and understand it, but generate ALL output — headline, copy, description, CTA, caption, hashtags — in ENGLISH.]'
+      : '';
     const briefWithLang = (form.brief || '').trim() + langNote;
 
     const res = await fetch('/api/generate', {
