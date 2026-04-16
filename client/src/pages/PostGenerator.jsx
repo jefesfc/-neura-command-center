@@ -107,6 +107,7 @@ export default function PostGenerator() {
   const [context, setContext]           = useState('');
   const [ctaType, setCtaType]           = useState('auto');
   const [contentType, setContentType]   = useState('auto');
+  const [briefLang, setBriefLang]       = useState('es');
   const [showContext, setShowContext]   = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -139,10 +140,15 @@ export default function PostGenerator() {
     setSlides([]);
     setSlideIdx(0);
 
+    const langNote = briefLang === 'es'
+      ? '\n\n[IDIOMA: Todo el copy, titular, descripción, CTA y caption deben estar en ESPAÑOL.]'
+      : '\n\n[LANGUAGE: All copy, headline, description, CTA and caption must be in ENGLISH.]';
+    const briefWithLang = (form.brief || '').trim() + langNote;
+
     const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, imageStyle, platform, goal, layoutStyle, context, ctaType }),
+      body: JSON.stringify({ ...form, brief: briefWithLang, imageStyle, platform, goal, layoutStyle, context, ctaType }),
     });
     const { jobId, error } = await res.json();
     if (error || !jobId) { setPhase('error'); return; }
@@ -330,10 +336,33 @@ export default function PostGenerator() {
 
               {/* 1. Main Request */}
               <div>
-                <label className="label mb-2 block">What do you want to create?</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="label">What do you want to create?</label>
+                  <div className="flex rounded-lg overflow-hidden border border-black/10" style={{ fontSize: '10px' }}>
+                    {[{ v: 'es', label: 'ES' }, { v: 'en', label: 'EN' }].map(({ v, label }) => (
+                      <button
+                        key={v}
+                        onClick={() => setBriefLang(v)}
+                        style={{
+                          padding: '3px 10px',
+                          fontFamily: '"DM Mono", monospace',
+                          fontWeight: 500,
+                          letterSpacing: '0.08em',
+                          transition: 'all .15s',
+                          background: briefLang === v ? 'rgb(var(--tw-gold))' : 'transparent',
+                          color: briefLang === v ? 'rgb(var(--tw-navy-dark))' : 'rgb(var(--color-text-muted))',
+                          border: 'none',
+                          cursor: 'pointer',
+                        }}
+                      >{label}</button>
+                    ))}
+                  </div>
+                </div>
                 <textarea
                   rows={4} className="input resize-none"
-                  placeholder="Describe the idea, topic or goal..."
+                  placeholder={briefLang === 'es'
+                    ? 'Describe la idea, tema o objetivo del post...'
+                    : 'Describe the idea, topic or goal...'}
                   value={form.brief}
                   onChange={e => set('brief', e.target.value)}
                 />
