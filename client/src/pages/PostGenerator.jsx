@@ -209,6 +209,15 @@ export default function PostGenerator() {
     });
   }
 
+  function triggerDownload(b64, filename) {
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = `data:image/png;base64,${b64}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   async function autoSaveAll() {
     if (!post && phase !== 'done') return;
     setSaving(true);
@@ -230,12 +239,12 @@ export default function PostGenerator() {
         body: JSON.stringify({ pngB64: b64, slideIndex: allSlides.length > 1 ? i : undefined }),
       });
 
-      if (i === 0) {
-        const link = document.createElement('a');
-        link.download = slides.length > 1 ? `neura-carousel-${postId}-slide1.png` : `neura-post-${postId}.png`;
-        link.href = `data:image/png;base64,${b64}`;
-        link.click();
-      }
+      // Auto-download all slides (with small delay between each)
+      const filename = allSlides.length > 1
+        ? `neura-carousel-${postId}-slide${i + 1}.png`
+        : `neura-post-${postId}.png`;
+      triggerDownload(b64, filename);
+      if (i < allSlides.length - 1) await new Promise(r => setTimeout(r, 500));
     }
     setSaving(false);
   }
@@ -248,10 +257,10 @@ export default function PostGenerator() {
     const sz  = FORMAT_SIZES[form.format] || FORMAT_SIZES['1:1'];
     const b64 = await renderIframeToB64(html, sz);
     if (b64) {
-      const link = document.createElement('a');
-      link.download = slides.length > 1 ? `neura-carousel-${post?.id}-slide${idx + 1}.png` : `neura-post-${post?.id}.png`;
-      link.href = `data:image/png;base64,${b64}`;
-      link.click();
+      const filename = slides.length > 1
+        ? `neura-carousel-${post?.id}-slide${idx + 1}.png`
+        : `neura-post-${post?.id}.png`;
+      triggerDownload(b64, filename);
     }
     setSaving(false);
   }
@@ -263,11 +272,8 @@ export default function PostGenerator() {
     for (let i = 0; i < slides.length; i++) {
       const b64 = await renderIframeToB64(slides[i].html, sz);
       if (b64) {
-        const link = document.createElement('a');
-        link.download = `neura-carousel-${post?.id}-slide${i + 1}.png`;
-        link.href = `data:image/png;base64,${b64}`;
-        link.click();
-        await new Promise(r => setTimeout(r, 400));
+        triggerDownload(b64, `neura-carousel-${post?.id}-slide${i + 1}.png`);
+        if (i < slides.length - 1) await new Promise(r => setTimeout(r, 500));
       }
     }
     setSaving(false);
