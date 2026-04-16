@@ -202,8 +202,8 @@ function buildInstagramHTML({ headline, headline_accent, subheadline, cta, syste
   // Overlay adapts to image brightness:
   //   dark image  → lighter overlay (image already dark, let it breathe)
   //   light image → heavier overlay (image bright, need more contrast for text)
-  const igMid = imageTone === 'light' ? '0.62' : '0.40';
-  const igBot = imageTone === 'light' ? '0.97' : '0.93';
+  const igMid = imageTone === 'light' ? '0.28' : '0.12';
+  const igBot = imageTone === 'light' ? '0.90' : '0.82';
 
   const bgStyle = imageB64
     ? `background-image:url('data:image/jpeg;base64,${imageB64}');background-size:cover;background-position:center top;`
@@ -236,15 +236,15 @@ ${FONTS}
 
   <!-- Layer 2: Cinematic gradient — adapts to imageTone (dark=lighter overlay, light=heavier) -->
   <div style="position:absolute;inset:0;background:linear-gradient(to bottom,
-    ${p.overlayTop} 0%,
-    rgba(0,0,0,0.06) 18%,
+    rgba(0,0,0,0.02) 0%,
+    rgba(0,0,0,0.02) 18%,
     rgba(7,18,28,${igMid}) 40%,
-    rgba(7,18,28,0.82) 58%,
+    rgba(7,18,28,0.62) 58%,
     rgba(7,18,28,${igBot}) 100%
   );z-index:1;"></div>
 
   <!-- Layer 3: Edge vignette — draws focus to center, adds cinematic depth -->
-  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,transparent 35%,rgba(0,0,0,0.42) 100%);z-index:2;"></div>
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,transparent 45%,rgba(0,0,0,0.18) 100%);z-index:2;"></div>
 
   <!-- Layer 4: Full-width hairline at 48% — aligns with where text block starts -->
   <div style="position:absolute;top:48%;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,${p.accent}55 15%,${p.accent}55 85%,transparent 100%);z-index:6;"></div>
