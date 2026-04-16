@@ -113,8 +113,8 @@ function applyAccent(headline, accent_word, accentColor) {
 
 function logoEl(format) {
   // story → large | 1:1 → medium | landscape → compact
-  const h   = format === '9:16' ? '46px' : format === '1.91:1' ? '30px' : '34px';
-  const fSz = format === '9:16' ? '38px' : format === '1.91:1' ? '24px' : '28px';
+  const h   = format === '9:16' ? '55px' : format === '1.91:1' ? '30px' : '41px';
+  const fSz = format === '9:16' ? '46px' : format === '1.91:1' ? '24px' : '34px';
   return LOGO_B64
     ? `<img src="data:image/png;base64,${LOGO_B64}" alt="Neura" style="height:${h};width:auto;object-fit:contain;display:block;">`
     : `<span style="font-family:'Cormorant Garamond',serif;font-size:${fSz};font-weight:700;letter-spacing:0.14em;color:#fff;">NEURA</span>`;
