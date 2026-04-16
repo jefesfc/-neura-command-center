@@ -168,7 +168,7 @@ function bracketsEl(p, isStory) {
 // Short horizontal accent line — marks the start of the text zone
 function accentLineEl(p, isStory) {
   const w = isStory ? '48px' : '32px';
-  const mb = isStory ? '20px' : '12px';
+  const mb = isStory ? '28px' : '18px';
   return `<div style="width:${w};height:1px;background:linear-gradient(90deg,${p.accent},transparent);margin-bottom:${mb};"></div>`;
 }
 
@@ -264,9 +264,9 @@ ${FONTS}
 
     ${accentLineEl(p, isStory)}
 
-    ${hook ? `<div style="font-family:'DM Mono',monospace;font-size:${hookSz};color:${p.accent};letter-spacing:0.22em;text-transform:uppercase;margin-bottom:${isStory?'22px':'14px'};text-shadow:0 1px 8px rgba(0,0,0,0.90);">${esc(hook)}</div>` : ''}
+    ${hook ? `<div style="font-family:'DM Mono',monospace;font-size:${hookSz};color:${p.accent};letter-spacing:0.22em;text-transform:uppercase;margin-bottom:${isStory?'34px':'22px'};text-shadow:0 1px 8px rgba(0,0,0,0.90);">${esc(hook)}</div>` : ''}
 
-    <h1 style="font-family:'Cormorant Garamond',serif;font-size:${h1Size};font-weight:700;line-height:1.01;color:${p.text};letter-spacing:-0.022em;text-shadow:0 3px 28px rgba(0,0,0,0.90),0 1px 8px rgba(0,0,0,0.70);margin-bottom:${isStory?'44px':'28px'};">${headlineHtml}</h1>
+    <h1 style="font-family:'Cormorant Garamond',serif;font-size:${h1Size};font-weight:700;line-height:1.01;color:${p.text};letter-spacing:-0.022em;text-shadow:0 3px 28px rgba(0,0,0,0.90),0 1px 8px rgba(0,0,0,0.70);margin-bottom:${isStory?'64px':'44px'};">${headlineHtml}</h1>
 
     ${ctaEl(cta, p, isStory)}
 
