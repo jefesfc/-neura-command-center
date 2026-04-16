@@ -389,7 +389,53 @@ export default function PostGenerator() {
                 </div>
               </div>
 
-              {/* 6. Optional Context */}
+              {/* 6. Color Palette */}
+              <div>
+                <label className="label mb-2 block">Color Palette</label>
+                <div className="flex gap-2">
+                  {PALETTES.map(pl => (
+                    <button key={pl.value} onClick={() => set('palette', pl.value)}
+                      className={`flex-1 rounded-xl border p-2.5 flex flex-col items-center gap-1.5 transition-all ${
+                        form.palette === pl.value ? 'border-teal/60 bg-teal/8' : 'border-black/10 hover:border-black/20'
+                      }`}
+                    >
+                      <div className="flex gap-1">
+                        {pl.colors.map((c, i) => (
+                          <div key={i} className="w-3 h-3 rounded-full border border-black/15" style={{ background: c }} />
+                        ))}
+                      </div>
+                      <span className="label text-[10px]">{pl.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 7. Image Style */}
+              <div>
+                <label className="label mb-2 block">Image Style</label>
+                <div className="flex flex-col gap-1.5">
+                  {IMAGE_STYLES.map(style => (
+                    <label key={style.value}
+                      className={`flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-all ${
+                        imageStyle === style.value ? 'border-teal/50 bg-teal/8' : 'border-black/10 hover:border-black/20'
+                      }`}
+                    >
+                      <input
+                        type="radio" name="imageStyle" value={style.value}
+                        checked={imageStyle === style.value}
+                        onChange={() => setImageStyle(style.value)}
+                        className="accent-teal flex-shrink-0"
+                      />
+                      <div>
+                        <div className="text-theme text-xs font-semibold">{style.label}</div>
+                        <div className="text-theme-muted text-[10px] mt-0.5">{style.desc}</div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* 8. Optional Context */}
               <div>
                 <button
                   onClick={() => setShowContext(v => !v)}
@@ -410,11 +456,11 @@ export default function PostGenerator() {
                 )}
               </div>
 
-              {/* 7. Advanced Settings */}
-              <div className="border-t border-white/5 pt-4">
+              {/* 9. Advanced Settings */}
+              <div className="border-t border-black/8 pt-4">
                 <button
                   onClick={() => setShowAdvanced(v => !v)}
-                  className="flex items-center gap-2 text-white/40 hover:text-white/60 text-xs font-medium transition-all w-full"
+                  className="flex items-center gap-2 text-theme-muted hover:text-theme text-xs font-medium transition-all w-full"
                 >
                   <Settings2 size={12} />
                   Advanced Settings
@@ -426,71 +472,21 @@ export default function PostGenerator() {
 
                 {showAdvanced && (
                   <div className="mt-4 space-y-4">
-
                     {/* Format */}
                     <div>
                       <label className="label mb-2 block">Format</label>
                       <Toggle options={FORMATS} value={form.format} onChange={v => set('format', v)} />
                     </div>
-
                     {/* Tone */}
                     <div>
                       <label className="label mb-2 block">Tone</label>
                       <Toggle options={TONES} value={form.tone} onChange={v => set('tone', v)} />
                     </div>
-
                     {/* CTA Type */}
                     <div>
                       <label className="label mb-2 block">CTA Type</label>
                       <Toggle options={CTA_TYPES} value={ctaType} onChange={setCtaType} />
                     </div>
-
-                    {/* Palette */}
-                    <div>
-                      <label className="label mb-2 block">Color Palette</label>
-                      <div className="flex gap-2">
-                        {PALETTES.map(pl => (
-                          <button key={pl.value} onClick={() => set('palette', pl.value)}
-                            className={`flex-1 rounded-xl border p-2.5 flex flex-col items-center gap-1.5 transition-all ${
-                              form.palette === pl.value ? 'border-teal/60 bg-teal/8' : 'border-white/10 hover:border-white/20'
-                            }`}
-                          >
-                            <div className="flex gap-1">
-                              {pl.colors.map((c, i) => (
-                                <div key={i} className="w-3 h-3 rounded-full border border-white/15" style={{ background: c }} />
-                              ))}
-                            </div>
-                            <span className="label text-[10px]">{pl.label}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Image Style */}
-                    <div>
-                      <label className="label mb-2 block">Image Style</label>
-                      <div className="flex flex-col gap-1.5">
-                        {IMAGE_STYLES.map(style => (
-                          <label key={style.value}
-                            className={`flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-all ${
-                              imageStyle === style.value ? 'border-teal/50 bg-teal/8' : 'border-white/10 hover:border-white/20'
-                            }`}
-                          >
-                            <input
-                              type="radio" name="imageStyle" value={style.value}
-                              checked={imageStyle === style.value}
-                              onChange={() => setImageStyle(style.value)}
-                              className="accent-teal flex-shrink-0"
-                            />
-                            <div>
-                              <div className="text-theme text-xs font-semibold">{style.label}</div>
-                              <div className="text-theme-muted text-[10px] mt-0.5">{style.desc}</div>
-                            </div>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
                   </div>
                 )}
               </div>
