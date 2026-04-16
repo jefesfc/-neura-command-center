@@ -224,6 +224,22 @@ export default function PostGenerator() {
     document.body.removeChild(link);
   }
 
+  async function triggerZipDownload(items, zipName) {
+    // items: [{ b64, filename }]
+    const JSZip = (await import('jszip')).default;
+    const zip = new JSZip();
+    items.forEach(({ b64, filename }) => zip.file(filename, b64, { base64: true }));
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const url  = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = zipName;
+    link.href = url;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
   async function autoSaveAll() {
     if (!post && phase !== 'done') return;
     setSaving(true);
@@ -232,6 +248,7 @@ export default function PostGenerator() {
 
     const sz        = FORMAT_SIZES[form.format] || FORMAT_SIZES['1:1'];
     const allSlides = slides.length > 0 ? slides : [{ html: postHtml, index: 0 }];
+    const rendered  = [];
 
     for (let i = 0; i < allSlides.length; i++) {
       const html = allSlides[i]?.html;
@@ -239,19 +256,26 @@ export default function PostGenerator() {
       const b64 = await renderIframeToB64(html, sz);
       if (!b64) continue;
 
+      // Save to server
       await fetch(`/api/posts/${postId}/save-png`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pngB64: b64, slideIndex: allSlides.length > 1 ? i : undefined }),
       });
 
-      // Auto-download all slides (with small delay between each)
-      const filename = allSlides.length > 1
+      rendered.push({ b64, filename: allSlides.length > 1
         ? `neura-carousel-${postId}-slide${i + 1}.png`
-        : `neura-post-${postId}.png`;
-      triggerDownload(b64, filename);
-      if (i < allSlides.length - 1) await new Promise(r => setTimeout(r, 500));
+        : `neura-post-${postId}.png`
+      });
     }
+
+    // Single download: ZIP if multiple slides, PNG if single
+    if (rendered.length > 1) {
+      await triggerZipDownload(rendered, `neura-carousel-${postId}.zip`);
+    } else if (rendered.length === 1) {
+      triggerDownload(rendered[0].b64, rendered[0].filename);
+    }
+
     setSaving(false);
   }
 
@@ -274,13 +298,14 @@ export default function PostGenerator() {
   async function handleDownloadAll() {
     if (slides.length === 0) { handleDownloadSlide(0); return; }
     setSaving(true);
-    const sz = FORMAT_SIZES[form.format] || FORMAT_SIZES['1:1'];
+    const sz      = FORMAT_SIZES[form.format] || FORMAT_SIZES['1:1'];
+    const items   = [];
     for (let i = 0; i < slides.length; i++) {
       const b64 = await renderIframeToB64(slides[i].html, sz);
-      if (b64) {
-        triggerDownload(b64, `neura-carousel-${post?.id}-slide${i + 1}.png`);
-        if (i < slides.length - 1) await new Promise(r => setTimeout(r, 500));
-      }
+      if (b64) items.push({ b64, filename: `neura-carousel-${post?.id}-slide${i + 1}.png` });
+    }
+    if (items.length > 0) {
+      await triggerZipDownload(items, `neura-carousel-${post?.id}.zip`);
     }
     setSaving(false);
   }
@@ -614,7 +639,7 @@ export default function PostGenerator() {
                   {isCarousel && (
                     <button onClick={handleDownloadAll} disabled={saving}
                       className="btn-primary flex-1 justify-center disabled:opacity-50">
-                      <Download size={16} /> All ({slides.length})
+                      <Download size={16} /> ZIP ({slides.length} slides)
                     </button>
                   )}
                 </div>
