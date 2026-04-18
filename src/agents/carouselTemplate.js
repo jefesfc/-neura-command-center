@@ -20,7 +20,7 @@ const SYSTEM_BADGE = {
 
 const PALETTES = {
   navy: {
-    overlay: 'linear-gradient(150deg, rgba(7,18,28,0.96) 0%, rgba(11,30,45,0.72) 50%, rgba(7,18,28,0.94) 100%)',
+    overlay: 'linear-gradient(150deg, rgba(7,18,28,0.28) 0%, rgba(7,18,28,0.18) 50%, rgba(7,18,28,0.28) 100%)',
     fallbackBg: '#0b1e2d',
     accent: '#1fa2b8',
     accent2: '#c98a5a',
@@ -37,7 +37,7 @@ const PALETTES = {
     counterColor: 'rgba(31,162,184,0.55)',
   },
   gold: {
-    overlay: 'linear-gradient(150deg, rgba(12,8,2,0.97) 0%, rgba(20,14,4,0.72) 50%, rgba(12,8,2,0.96) 100%)',
+    overlay: 'linear-gradient(150deg, rgba(12,8,2,0.28) 0%, rgba(12,8,2,0.18) 50%, rgba(12,8,2,0.28) 100%)',
     fallbackBg: '#130e04',
     accent: '#d4a040',
     accent2: '#f0d080',
@@ -54,7 +54,7 @@ const PALETTES = {
     counterColor: 'rgba(212,160,64,0.55)',
   },
   grey: {
-    overlay: 'linear-gradient(150deg, rgba(6,6,12,0.97) 0%, rgba(10,10,18,0.70) 50%, rgba(6,6,12,0.96) 100%)',
+    overlay: 'linear-gradient(150deg, rgba(6,6,12,0.28) 0%, rgba(6,6,12,0.18) 50%, rgba(6,6,12,0.28) 100%)',
     fallbackBg: '#08080e',
     accent: '#8fa8be',
     accent2: '#1fa2b8',
@@ -95,6 +95,7 @@ function sharedStyles(p, width, height, isStory, bgStyle) {
   .logo-text {
     font-family: 'Cormorant Garamond', serif; font-size: ${isStory ? '42px' : '32px'};
     font-weight: 700; letter-spacing: 0.14em; color: #ffffff;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.85);
   }
   .badge {
     font-family: 'DM Mono', monospace; font-size: ${isStory ? '18px' : '13px'};
@@ -145,10 +146,12 @@ ${sharedStyles(p, width, height, isStory, bgStyle)}
 .title {
   font-family: 'Cormorant Garamond', serif; font-size: ${titleSize}; font-weight: 700;
   line-height: 1.05; color: ${p.text}; margin-bottom: ${isStory ? '40px' : '28px'}; letter-spacing: -0.02em;
+  text-shadow: 0 3px 24px rgba(0,0,0,0.92), 0 1px 8px rgba(0,0,0,0.80);
 }
 .subtitle {
   font-family: 'Inter', sans-serif; font-size: ${isStory ? '32px' : '24px'};
   font-weight: 400; color: ${p.textMuted}; line-height: 1.5; max-width: 85%;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.85);
 }
 .bottom { display: flex; align-items: center; justify-content: space-between; padding-top: ${isStory ? '36px' : '24px'}; }
 .swipe-hint {
@@ -212,10 +215,12 @@ ${sharedStyles(p, width, height, isStory, bgStyle)}
 .point-title {
   font-family: 'Cormorant Garamond', serif; font-size: ${titleSize}; font-weight: 700;
   line-height: 1.08; color: ${p.text}; letter-spacing: -0.015em;
+  text-shadow: 0 3px 24px rgba(0,0,0,0.92), 0 1px 8px rgba(0,0,0,0.80);
 }
 .point-body {
   font-family: 'Inter', sans-serif; font-size: ${isStory ? '30px' : '22px'};
   font-weight: 400; color: ${p.textMuted}; line-height: 1.60; max-width: 92%;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.85);
 }
 .bottom { display: flex; align-items: center; justify-content: space-between; padding-top: ${isStory ? '36px' : '24px'}; }
 .slide-counter {
@@ -274,10 +279,12 @@ ${sharedStyles(p, width, height, isStory, bgStyle)}
 .cta-headline {
   font-family: 'Cormorant Garamond', serif; font-size: ${headlineSize}; font-weight: 700;
   line-height: 1.05; color: ${p.text}; letter-spacing: -0.02em;
+  text-shadow: 0 3px 24px rgba(0,0,0,0.92), 0 1px 8px rgba(0,0,0,0.80);
 }
 .cta-sub {
   font-family: 'Inter', sans-serif; font-size: ${isStory ? '30px' : '22px'};
   font-weight: 400; color: ${p.textMuted}; line-height: 1.5; max-width: 88%;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.85);
 }
 .cta-box {
   display: flex; align-items: center; gap: ${isStory ? '24px' : '16px'};
