@@ -199,11 +199,10 @@ function buildInstagramHTML({ headline, headline_accent, subheadline, cta, syste
   const W = 1080, H = isStory ? 1920 : 1080;
   const p = PALETTES[palette] || PALETTES.navy;
 
-  // Overlay adapts to image brightness:
-  //   dark image  → lighter overlay (image already dark, let it breathe)
-  //   light image → heavier overlay (image bright, need more contrast for text)
-  const igMid = imageTone === 'light' ? '0.28' : '0.12';
-  const igBot = imageTone === 'light' ? '0.90' : '0.82';
+  // Overlay ONLY in the text zone (bottom ~55%) — image stays bright at top
+  // Light images get slightly more overlay for text contrast, but never full-canvas
+  const igTextBot = imageTone === 'light' ? '0.95' : '0.88';
+  const igTextMid = imageTone === 'light' ? '0.72' : '0.60';
 
   const bgStyle = imageB64
     ? `background-image:url('data:image/jpeg;base64,${imageB64}');background-size:cover;background-position:center top;`
@@ -234,17 +233,13 @@ ${FONTS}
 <body>
 <div style="position:relative;width:${W}px;height:${H}px;${bgStyle}font-family:'Inter',sans-serif;">
 
-  <!-- Layer 2: Cinematic gradient — adapts to imageTone (dark=lighter overlay, light=heavier) -->
+  <!-- Layer 2: Text-zone gradient — ONLY covers bottom 58%, image stays bright at top -->
   <div style="position:absolute;inset:0;background:linear-gradient(to bottom,
-    rgba(0,0,0,0.02) 0%,
-    rgba(0,0,0,0.02) 18%,
-    rgba(7,18,28,${igMid}) 40%,
-    rgba(7,18,28,0.62) 58%,
-    rgba(7,18,28,${igBot}) 100%
+    transparent 0%,
+    transparent 40%,
+    rgba(7,18,28,${igTextMid}) 54%,
+    rgba(7,18,28,${igTextBot}) 100%
   );z-index:1;"></div>
-
-  <!-- Layer 3: Edge vignette — draws focus to center, adds cinematic depth -->
-  <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,transparent 45%,rgba(0,0,0,0.18) 100%);z-index:2;"></div>
 
   <!-- Layer 4: Full-width hairline at 48% — aligns with where text block starts -->
   <div style="position:absolute;top:48%;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,${p.accent}55 15%,${p.accent}55 85%,transparent 100%);z-index:6;"></div>
@@ -372,11 +367,12 @@ ${FONTS}
 <body>
 <div style="position:relative;width:${W}px;height:${H}px;${bgStyle}font-family:'Inter',sans-serif;">
 
-  <!-- Layer 2: Diagonal editorial overlay — adapts to imageTone (dark=lighter, light=heavier) -->
-  <div style="position:absolute;inset:0;background:linear-gradient(148deg,
-    rgba(5,12,22,${imageTone === 'light' ? '0.78' : '0.58'}) 0%,
-    rgba(5,12,22,${imageTone === 'light' ? '0.62' : '0.44'}) 45%,
-    rgba(5,12,22,${imageTone === 'light' ? '0.78' : '0.58'}) 100%
+  <!-- Layer 2: Text-zone gradient — ONLY covers bottom 55%, image stays bright at top -->
+  <div style="position:absolute;inset:0;background:linear-gradient(to bottom,
+    transparent 0%,
+    transparent ${isStory ? '38%' : isLandscape ? '28%' : '38%'},
+    rgba(5,12,22,${imageTone === 'light' ? '0.70' : '0.58'}) ${isStory ? '52%' : isLandscape ? '40%' : '50%'},
+    rgba(5,12,22,${imageTone === 'light' ? '0.96' : '0.90'}) 100%
   );z-index:1;"></div>
 
   <!-- Layer 3: Accent glow top-right — brand color depth -->
