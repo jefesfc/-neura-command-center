@@ -23,10 +23,21 @@ Slide 5 (cta)     → strong closing statement + clear next step action
 ═══════════════════════════════════════════
 WRITING RULES
 ═══════════════════════════════════════════
-• Titles: sharp, specific, max 45–55 chars
+• Titles: sharp, specific, max 45–55 chars — be unexpected, provocative, concrete
 • Body: 2–3 short sentences — concrete, insight-driven, not generic
 • Progression: each slide builds on the last (problem → insight → solution → action)
 • Never start with "Boost", "Improve", "Transform", or any generic verb
+• Use strong, unexpected verbs and vivid nouns — make every word earn its place
+
+═══════════════════════════════════════════
+ACCENT WORD RULES
+═══════════════════════════════════════════
+• Every slide must include "title_accent": ONE meaningful word from the title/headline
+• Pick a strong noun, verb, or adjective — the word that carries the most weight
+• NEVER pick stop words: the, a, an, of, for, in, with, and, or, but, to, at, by,
+  from, as, is, it, its, on, this, that, are, was, were, be, been, not, no, so,
+  do, does, did, your, our, their, we, you
+• The accent word must appear exactly as written in the title (case-sensitive match)
 
 Always return valid JSON only. No text outside the JSON.`;
 
@@ -52,30 +63,35 @@ Return ONLY this JSON:
   "slides": [
     {
       "type": "cover",
-      "title": "Short powerful hook (max 50 chars)",
-      "subtitle": "One sentence teaser that makes them want to swipe (max 90 chars)"
+      "title": "Unexpected, sharp hook — makes them stop scrolling (max 50 chars)",
+      "title_accent": "the one word from title that carries the most weight",
+      "subtitle": "One sentence that reveals just enough to make them swipe (max 90 chars)"
     },
     {
       "type": "content",
       "num": "01",
-      "point_title": "The bullet point as a bold title (max 45 chars)",
-      "point_body": "2-3 sentences expanding on this benefit with specific detail and real impact"
+      "point_title": "Bold, specific claim — not a summary, a revelation (max 45 chars)",
+      "title_accent": "the one word from point_title that carries the most weight",
+      "point_body": "2-3 sentences with concrete detail, real business context, unexpected insight"
     },
     {
       "type": "content",
       "num": "02",
-      "point_title": "The bullet point as a bold title (max 45 chars)",
-      "point_body": "2-3 sentences expanding on this benefit with specific detail and real impact"
+      "point_title": "Bold, specific claim — not a summary, a revelation (max 45 chars)",
+      "title_accent": "the one word from point_title that carries the most weight",
+      "point_body": "2-3 sentences with concrete detail, real business context, unexpected insight"
     },
     {
       "type": "content",
       "num": "03",
-      "point_title": "The bullet point as a bold title (max 45 chars)",
-      "point_body": "2-3 sentences expanding on this benefit with specific detail and real impact"
+      "point_title": "Bold, specific claim — not a summary, a revelation (max 45 chars)",
+      "title_accent": "the one word from point_title that carries the most weight",
+      "point_body": "2-3 sentences with concrete detail, real business context, unexpected insight"
     },
     {
       "type": "cta",
-      "cta_headline": "Compelling closing statement (max 55 chars)",
+      "cta_headline": "Closing statement with urgency and weight (max 55 chars)",
+      "title_accent": "the one word from cta_headline that carries the most weight",
       "cta_sub": "One line reinforcing the value and next step (max 80 chars)",
       "cta_action": "${cta}"
     }

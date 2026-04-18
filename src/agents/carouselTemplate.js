@@ -72,6 +72,25 @@ const PALETTES = {
   },
 };
 
+const STOP_WORDS = new Set([
+  'the','a','an','of','for','in','with','and','or','but','to','at','by',
+  'from','as','is','it','its','on','this','that','are','was','were','be',
+  'been','not','no','so','do','does','did','your','our','their','we','you',
+]);
+
+function applyAccent(text, accentWord, accentColor) {
+  if (!text) return '';
+  const w = (accentWord || '').trim();
+  const esc = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  if (w && w.length > 2 && !STOP_WORDS.has(w.toLowerCase()) && text.includes(w)) {
+    const i = text.indexOf(w);
+    return esc(text.slice(0, i))
+      + `<span style="color:${accentColor}">${esc(w)}</span>`
+      + esc(text.slice(i + w.length));
+  }
+  return esc(text);
+}
+
 function sharedStyles(p, width, height, isStory, bgStyle) {
   return `
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -121,7 +140,7 @@ function logoHtml() {
 }
 
 // ─── SLIDE 1: COVER ──────────────────────────────────────────────────────────
-function buildCoverSlide({ title, subtitle, system, imageB64, format, palette, slideNum, totalSlides }) {
+function buildCoverSlide({ title, title_accent, subtitle, system, imageB64, format, palette, slideNum, totalSlides }) {
   const isStory = format === '9:16';
   const width = 1080, height = isStory ? 1920 : 1080;
   const p = PALETTES[palette] || PALETTES.navy;
@@ -130,6 +149,7 @@ function buildCoverSlide({ title, subtitle, system, imageB64, format, palette, s
     ? `background-image: url('data:image/jpeg;base64,${imageB64}'); background-size: cover; background-position: center;`
     : `background: ${p.fallbackBg};`;
   const titleSize = isStory ? '96px' : (title.length > 35 ? '72px' : '84px');
+  const titleHtml = applyAccent(title, title_accent, p.accent);
 
   return `<!DOCTYPE html><html><head><meta charset="UTF-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -171,7 +191,7 @@ ${sharedStyles(p, width, height, isStory, bgStyle)}
     <div class="sep"></div>
     <div class="main">
       <div class="accent-line"></div>
-      <h1 class="title">${title}</h1>
+      <h1 class="title">${titleHtml}</h1>
       <p class="subtitle">${subtitle}</p>
     </div>
     <div class="sep"></div>
@@ -186,7 +206,7 @@ ${sharedStyles(p, width, height, isStory, bgStyle)}
 }
 
 // ─── SLIDES 2-4: CONTENT ─────────────────────────────────────────────────────
-function buildContentSlide({ num, point_title, point_body, system, imageB64, format, palette, slideNum, totalSlides }) {
+function buildContentSlide({ num, point_title, title_accent, point_body, system, imageB64, format, palette, slideNum, totalSlides }) {
   const isStory = format === '9:16';
   const width = 1080, height = isStory ? 1920 : 1080;
   const p = PALETTES[palette] || PALETTES.navy;
@@ -195,6 +215,7 @@ function buildContentSlide({ num, point_title, point_body, system, imageB64, for
     ? `background-image: url('data:image/jpeg;base64,${imageB64}'); background-size: cover; background-position: center;`
     : `background: ${p.fallbackBg};`;
   const titleSize = isStory ? '72px' : (point_title.length > 35 ? '52px' : '60px');
+  const titleHtml = applyAccent(point_title, title_accent, p.accent);
 
   return `<!DOCTYPE html><html><head><meta charset="UTF-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -237,7 +258,7 @@ ${sharedStyles(p, width, height, isStory, bgStyle)}
     <div class="main">
       <span class="big-num">${num}</span>
       <div class="accent-line"></div>
-      <h2 class="point-title">${point_title}</h2>
+      <h2 class="point-title">${titleHtml}</h2>
       <p class="point-body">${point_body}</p>
     </div>
     <div class="sep"></div>
@@ -251,7 +272,7 @@ ${sharedStyles(p, width, height, isStory, bgStyle)}
 }
 
 // ─── SLIDE 5: CTA ─────────────────────────────────────────────────────────────
-function buildCtaSlide({ cta_headline, cta_sub, cta_action, system, imageB64, format, palette, slideNum, totalSlides }) {
+function buildCtaSlide({ cta_headline, title_accent, cta_sub, cta_action, system, imageB64, format, palette, slideNum, totalSlides }) {
   const isStory = format === '9:16';
   const width = 1080, height = isStory ? 1920 : 1080;
   const p = PALETTES[palette] || PALETTES.navy;
@@ -260,6 +281,7 @@ function buildCtaSlide({ cta_headline, cta_sub, cta_action, system, imageB64, fo
     ? `background-image: url('data:image/jpeg;base64,${imageB64}'); background-size: cover; background-position: center;`
     : `background: ${p.fallbackBg};`;
   const headlineSize = isStory ? '88px' : (cta_headline.length > 35 ? '62px' : '72px');
+  const headlineHtml = applyAccent(cta_headline, title_accent, p.accent);
 
   return `<!DOCTYPE html><html><head><meta charset="UTF-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -310,7 +332,7 @@ ${sharedStyles(p, width, height, isStory, bgStyle)}
     <div class="sep"></div>
     <div class="main">
       <div class="accent-line"></div>
-      <h2 class="cta-headline">${cta_headline}</h2>
+      <h2 class="cta-headline">${headlineHtml}</h2>
       <p class="cta-sub">${cta_sub}</p>
       <div class="cta-box">
         <span class="cta-action">${cta_action}</span>
