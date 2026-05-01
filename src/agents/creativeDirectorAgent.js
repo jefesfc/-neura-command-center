@@ -48,10 +48,27 @@ image_agent must receive a SPECIFIC cinematic scene — not "a business scene" b
 "Cinematic overhead shot of a city at night with data flow overlays"
 
 ═══════════════════════════════════════════
+DESIGN STRATEGY
+═══════════════════════════════════════════
+design_style — choose based on brief and platform:
+• "hero-image"   → image dominates the frame (Instagram-first, strong visual concept)
+• "editorial"    → text dominates, image is background texture (Facebook, narrative content)
+• "data-visual"  → SVG chart background, NO real image needed (automation, CRM, metrics content)
+
+image_tone — controls overlay opacity over the generated image:
+• "dark"  → deep, cinematic, moody (default for AI/tech content)
+• "light" → bright, modern, clean (for office, daylight, minimalist scenes)
+
+palette_recommendation — choose based on brief positioning:
+• "navy"  → corporate AI/tech/systems (default)
+• "gold"  → premium/executive/luxury
+• "grey"  → minimal/clean/modern
+
+═══════════════════════════════════════════
 AGENT INSTRUCTIONS
 ═══════════════════════════════════════════
 copy_agent    → creative angle to use, core tension, what to contrast, 1 bold insight to anchor the headline
-image_agent   → exact cinematic scene (dark, premium, AI/tech context — no people, no offices)
+image_agent   → FULL visual brief: cinematic scene + mood + lighting + composition. Include color palette, atmosphere, and treatment. This replaces all hardcoded style rules — be specific and complete.
 layout_agent  → platform layout style, hierarchy priority, mood/contrast notes
 caption_agent → what angle to extend (not repeat), authority tone direction, CTA style
 
@@ -73,11 +90,14 @@ Return ONLY:
     "tone": "premium|sharp|B2B",
     "layout_style": "cinematic_dense|structured_carousel",
     "number_of_slides": 1,
-    "content_angle": "The core creative idea — sharp, specific, one sentence"
+    "content_angle": "The core creative idea — sharp, specific, one sentence",
+    "design_style": "hero-image|editorial|data-visual",
+    "image_tone": "dark|light",
+    "palette_recommendation": "navy|gold|grey"
   },
   "instructions": {
     "copy_agent": "Creative angle + tension + what the headline must convey",
-    "image_agent": "Exact cinematic scene description — dark, premium, no people",
+    "image_agent": "FULL visual brief: cinematic scene, mood, lighting, color palette, atmosphere — complete and self-contained",
     "layout_agent": "Platform layout style + hierarchy + mood notes",
     "caption_agent": "Extension angle + tone + CTA style"
   },
@@ -169,8 +189,12 @@ Or if revision needed:
 
 failing_agent must be: "copy", "caption", or null.`;
 
-async function runCreativeDirectorValidation({ strategy, copyOutput, captionOutput, postId }) {
+async function runCreativeDirectorValidation({ strategy, copyOutput, captionOutput, postId, mode = 'full' }) {
   const model = process.env.OPENAI_MODEL_CD || 'gpt-4o';
+
+  const captionSection = mode === 'copy'
+    ? 'CAPTION OUTPUT:\nNot yet generated — skip caption evaluation, validate copy only.'
+    : `CAPTION OUTPUT:\n${captionOutput?.caption || '(empty)'}`;
 
   const userPrompt = `STRATEGY:
 ${JSON.stringify(strategy || {}, null, 2)}
@@ -182,10 +206,9 @@ Description: ${copyOutput.description || ''}
 Bullets: ${(copyOutput.bullets || []).join(' | ')}
 CTA: ${copyOutput.cta || ''}
 
-CAPTION OUTPUT:
-${captionOutput.caption || ''}
+${captionSection}
 
-Validate both outputs against the strategy. Is the quality premium and on-brand?`;
+Validate${mode === 'copy' ? ' COPY ONLY' : ' both outputs'} against the strategy. Is the quality premium and on-brand?`;
 
   const response = await client.chat.completions.create({
     model,

@@ -89,6 +89,13 @@ function sanitizeWord(val) {
   return (val || '').replace(/[^a-zA-ZÀ-ÿ\s]/g, '').trim();
 }
 
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  return `${r},${g},${b}`;
+}
+
 // Stop words: never accent articles, prepositions, conjunctions
 const STOP_WORDS = new Set([
   'the','a','an','of','for','in','with','and','or','but','to','at','by',
@@ -180,6 +187,66 @@ function separatorEl(p, isStory) {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
+// SVG BACKGROUND — data-visual mode (no AI image, chart + network nodes)
+// Used when designStyle === 'data-visual' or image_source === 'svg'
+// viewBox 0 0 1080 1080 + preserveAspectRatio slice → scales to any canvas
+// ═════════════════════════════════════════════════════════════════════════════
+function buildSvgBg(p) {
+  const a  = (o) => `rgba(${hexToRgb(p.accent)},${o})`;
+  const a2 = (o) => `rgba(${hexToRgb(p.accent2)},${o})`;
+  return `
+  <div style="position:absolute;inset:0;z-index:1;
+    background:
+      radial-gradient(ellipse at 65% 35%,${a('0.13')} 0%,transparent 42%),
+      radial-gradient(ellipse at 90% 80%,${a2('0.08')} 0%,transparent 35%),
+      radial-gradient(ellipse at 15% 20%,${a('0.06')} 0%,transparent 30%),
+      linear-gradient(160deg,#071828 0%,#0c2644 30%,#071420 60%,#030a12 100%);">
+  </div>
+  <svg style="position:absolute;inset:0;z-index:2;width:100%;height:100%;" viewBox="0 0 1080 1080" preserveAspectRatio="xMidYMid slice">
+    <line x1="680" y1="80"  x2="850" y2="200" stroke="${a('0.12')}" stroke-width="1"/>
+    <line x1="850" y1="200" x2="960" y2="140" stroke="${a('0.10')}" stroke-width="1"/>
+    <line x1="850" y1="200" x2="780" y2="320" stroke="${a('0.08')}" stroke-width="1"/>
+    <line x1="780" y1="320" x2="920" y2="380" stroke="${a2('0.08')}" stroke-width="1"/>
+    <line x1="920" y1="380" x2="1020" y2="300" stroke="${a('0.07')}" stroke-width="1"/>
+    <line x1="680" y1="80"  x2="760" y2="160" stroke="${a('0.09')}" stroke-width="1"/>
+    <line x1="760" y1="160" x2="850" y2="200" stroke="${a('0.09')}" stroke-width="1"/>
+    <rect x="0" y="170" width="1080" height="295" fill="${a('0.018')}"/>
+    <rect x="80"  y="345" width="48" height="120" rx="3" fill="${a('0.36')}"/>
+    <rect x="190" y="315" width="48" height="150" rx="3" fill="${a('0.42')}"/>
+    <rect x="300" y="332" width="48" height="133" rx="3" fill="${a2('0.38')}"/>
+    <rect x="410" y="298" width="48" height="167" rx="3" fill="${a('0.48')}"/>
+    <rect x="520" y="322" width="48" height="143" rx="3" fill="${a('0.40')}"/>
+    <rect x="630" y="278" width="48" height="187" rx="3" fill="${a2('0.48')}"/>
+    <rect x="740" y="300" width="48" height="165" rx="3" fill="${a('0.44')}"/>
+    <rect x="850" y="248" width="48" height="217" rx="3" fill="${a('0.54')}"/>
+    <rect x="960" y="228" width="48" height="237" rx="3" fill="${a2('0.58')}"/>
+    <polyline points="104,338 214,308 324,325 434,291 544,315 654,271 764,293 874,241 984,221"
+      fill="none" stroke="${a2('0.88')}" stroke-width="2.5" stroke-dasharray="6 3"/>
+    <polyline points="104,338 214,308 324,325 434,291 544,315 654,271 764,293 874,241 984,221"
+      fill="none" stroke="${a2('0.20')}" stroke-width="9"/>
+    <circle cx="680" cy="80"  r="4"  fill="${a('0.70')}"/>
+    <circle cx="850" cy="200" r="6"  fill="${a('0.65')}"/>
+    <circle cx="960" cy="140" r="3"  fill="${a('0.55')}"/>
+    <circle cx="780" cy="320" r="5"  fill="${a2('0.60')}"/>
+    <circle cx="920" cy="380" r="4"  fill="${a('0.55')}"/>
+    <circle cx="760" cy="160" r="3"  fill="${a('0.50')}"/>
+    <circle cx="850" cy="200" r="14" fill="${a('0.12')}"/>
+    <circle cx="850" cy="200" r="22" fill="${a('0.06')}"/>
+    <circle cx="200" cy="380" r="3"  fill="${a('0.22')}"/>
+    <circle cx="350" cy="420" r="2"  fill="${a2('0.18')}"/>
+    <circle cx="480" cy="360" r="3"  fill="${a('0.18')}"/>
+    <circle cx="560" cy="450" r="2"  fill="${a('0.14')}"/>
+    <line x1="200" y1="380" x2="350" y2="420" stroke="${a('0.07')}" stroke-width="1"/>
+    <line x1="350" y1="420" x2="480" y2="360" stroke="${a('0.06')}" stroke-width="1"/>
+    <line x1="480" y1="360" x2="560" y2="450" stroke="${a2('0.06')}" stroke-width="1"/>
+  </svg>
+  <div style="position:absolute;inset:0;z-index:3;opacity:0.028;
+    background-image:linear-gradient(rgba(31,162,184,1) 1px,transparent 1px),linear-gradient(90deg,rgba(31,162,184,1) 1px,transparent 1px);
+    background-size:90px 90px;">
+  </div>`;
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
 // INSTAGRAM — One image. One headline. One action.
 //
 // Layer stack (bottom → top):
@@ -194,17 +261,16 @@ function separatorEl(p, isStory) {
 // Layout: top bar | flex:1 (image breathes) | accent line | hook | H1 | CTA
 // NO description, NO bullets, NO pillars, NO accent word below H1
 // ═════════════════════════════════════════════════════════════════════════════
-function buildInstagramHTML({ headline, headline_accent, subheadline, cta, system, imageB64, format, palette, imageTone = 'dark' }) {
+function buildInstagramHTML({ headline, headline_accent, subheadline, cta, system, imageB64, format, palette, imageTone = 'dark', designStyle = 'hero-image' }) {
   const isStory = format === '9:16';
   const W = 1080, H = isStory ? 1920 : 1080;
   const p = PALETTES[palette] || PALETTES.navy;
+  const isSvg = designStyle === 'data-visual' || !imageB64;
 
-  // Overlay ONLY in the text zone (bottom ~55%) — image stays bright at top
-  // Light images get slightly more overlay for text contrast, but never full-canvas
   const igTextBot = imageTone === 'light' ? '0.95' : '0.88';
   const igTextMid = imageTone === 'light' ? '0.72' : '0.60';
 
-  const bgStyle = imageB64
+  const bgStyle = (!isSvg && imageB64)
     ? `background-image:url('data:image/jpeg;base64,${imageB64}');background-size:cover;background-position:center top;`
     : `background:${p.fallbackBg};`;
 
@@ -232,6 +298,8 @@ ${FONTS}
 </head>
 <body>
 <div style="position:relative;width:${W}px;height:${H}px;${bgStyle}font-family:'Inter',sans-serif;">
+
+  ${isSvg ? buildSvgBg(p) : ''}
 
   <!-- Layer 2: Text-zone gradient — ONLY covers bottom 58%, image stays bright at top -->
   <div style="position:absolute;inset:0;background:linear-gradient(to bottom,
@@ -288,18 +356,15 @@ ${FONTS}
 // Layout: top bar | [separator | hook | H1 | sep line | desc | bullets | pillars | CTA]
 // Content left padding clears the 4px left bar
 // ═════════════════════════════════════════════════════════════════════════════
-function buildFacebookHTML({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format, palette, imageTone = 'dark' }) {
+function buildFacebookHTML({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format, palette, imageTone = 'dark', designStyle = 'editorial' }) {
   const isStory    = format === '9:16';
   const isLandscape = format === '1.91:1';
-  // Canvas sizes:
-  //   1:1     → 1080×1080  (square, shows with gray bars in desktop feed)
-  //   1.91:1  → 1200×628   (landscape, fills full feed width on desktop — recommended)
-  //   9:16    → 1080×1920  (story)
   const W = isLandscape ? 1200 : 1080;
   const H = isStory ? 1920 : isLandscape ? 628 : 1080;
   const p = PALETTES[palette] || PALETTES.navy;
+  const isSvg = designStyle === 'data-visual' || !imageB64;
 
-  const bgStyle = imageB64
+  const bgStyle = (!isSvg && imageB64)
     ? `background-image:url('data:image/jpeg;base64,${imageB64}');background-size:cover;background-position:center;`
     : `background:${p.fallbackBg};`;
 
@@ -367,6 +432,8 @@ ${FONTS}
 <body>
 <div style="position:relative;width:${W}px;height:${H}px;${bgStyle}font-family:'Inter',sans-serif;">
 
+  ${isSvg ? buildSvgBg(p) : ''}
+
   <!-- Layer 2: Text-zone gradient — ONLY covers bottom 55%, image stays bright at top -->
   <div style="position:absolute;inset:0;background:linear-gradient(to bottom,
     transparent 0%,
@@ -425,11 +492,11 @@ ${FONTS}
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
-function buildPostHTML({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format = '1:1', palette = 'navy', platform = 'Instagram', imageTone = 'dark' }) {
+function buildPostHTML({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format = '1:1', palette = 'navy', platform = 'Instagram', imageTone = 'dark', designStyle = 'hero-image' }) {
   const isIG = (platform || 'Instagram').toLowerCase() === 'instagram';
   return isIG
-    ? buildInstagramHTML({ headline, headline_accent, subheadline, cta, system, imageB64, format, palette, imageTone })
-    : buildFacebookHTML({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format, palette, imageTone });
+    ? buildInstagramHTML({ headline, headline_accent, subheadline, cta, system, imageB64, format, palette, imageTone, designStyle })
+    : buildFacebookHTML({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format, palette, imageTone, designStyle });
 }
 
 module.exports = { buildPostHTML };

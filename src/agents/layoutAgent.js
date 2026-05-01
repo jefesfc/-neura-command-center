@@ -141,13 +141,13 @@ CONSISTENCY RULE
 - Keep visual coherence
 - Ensure it feels like one system, not separate designs`;
 
-async function runLayoutAgent({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format = '1:1', palette = 'navy', platform = 'Instagram', postType = 'single', carouselSlides = [], imageTone = 'dark' }) {
+async function runLayoutAgent({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format = '1:1', palette = 'navy', platform = 'Instagram', postType = 'single', carouselSlides = [], imageTone = 'dark', designStyle = 'hero-image' }) {
   if (postType === 'carousel' && carouselSlides.length > 0) {
     const slides = buildCarouselSlides({ slides: carouselSlides, system, imageB64, format, palette });
     return { html: slides[0]?.html || '', slides };
   }
 
-  const html = buildPostHTML({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format, palette, platform, imageTone });
+  const html = buildPostHTML({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format, palette, platform, imageTone, designStyle });
   return { html, slides: [] };
 }
 

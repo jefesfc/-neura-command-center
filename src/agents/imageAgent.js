@@ -90,22 +90,16 @@ const SYSTEM_CONTEXT = {
   'ai':         'AI implementation, machine learning dashboard, business technology, strategic planning',
 };
 
-const STYLE_SUFFIX = {
-  fotorrealista: 'photorealistic, modern office environment, professionals using technology, corporate setting, natural lighting, high detail photography',
-  abstract:      'abstract digital art, neural network visualization, dark background with teal and gold data streams, futuristic geometric forms, premium aesthetic',
-  hibrido:       'real office scene with holographic digital overlays, floating UI dashboards, data streams, blend of physical and digital worlds',
-};
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
-async function runImageAgent({ imagePrompt, aspectRatio = '1:1', system = '', imageStyle = 'fotorrealista', postId, cdInstruction }) {
+async function runImageAgent({ imagePrompt, aspectRatio = '1:1', system = '', postId, cdInstruction }) {
   const model = process.env.OPENROUTER_MODEL_IMAGE || 'google/gemini-3.1-flash-image-preview';
   const apiKey = process.env.OPENROUTER_API_KEY;
 
   const context = SYSTEM_CONTEXT[system] || 'business technology, AI solutions, digital transformation';
-  const styleSuffix = STYLE_SUFFIX[imageStyle] || STYLE_SUFFIX.abstract;
   const cdContext = cdInstruction ? ` — ${cdInstruction}` : '';
-  const enhancedPrompt = `${imagePrompt}${cdContext} — ${context} — dark navy tones (#0b1e2d), subtle teal accents, no text, no logos, ultra HD — ${styleSuffix}`;
+  const enhancedPrompt = `${imagePrompt}${cdContext} — ${context} — no text, no logos, ultra HD`;
 
   const payload = {
     model,
@@ -172,11 +166,7 @@ async function runImageAgent({ imagePrompt, aspectRatio = '1:1', system = '', im
     throw new Error('No image returned from OpenRouter. Check API key and model availability.');
   }
 
-  // Detect imageTone from raw prompt — light images need heavier overlay for text contrast
-  const lightKeywords = /bright|light\s|white|daylight|sunny|clean office|modern office|minimalist|airy|open space|well.?lit/i;
-  const imageTone = lightKeywords.test(imagePrompt) ? 'light' : 'dark';
-
-  return { imageB64, imageTone };
+  return { imageB64 };
 }
 
 module.exports = { runImageAgent };

@@ -52,7 +52,7 @@ router.post('/', async (req, res) => {
   const {
     brief, system,
     format = '1:1', tone = 'auto', palette = 'navy', post_type = 'single',
-    imageStyle = 'fotorrealista', platform = 'Instagram', goal = 'authority',
+    image_source = 'ai', platform = 'Instagram', goal = 'authority',
     layoutStyle = 'cinematic_dense', context = '', ctaType = 'auto',
   } = req.body;
   if (!brief || !system) return res.status(400).json({ error: 'brief and system required' });
@@ -61,7 +61,7 @@ router.post('/', async (req, res) => {
   jobs.set(jobId, { status: 'pending', steps: {}, error: null, postId: null });
   res.json({ jobId });
 
-  runPipeline(jobId, { brief, system, format, tone, palette, post_type, imageStyle, platform, goal, layoutStyle, context, ctaType });
+  runPipeline(jobId, { brief, system, format, tone, palette, post_type, image_source, platform, goal, layoutStyle, context, ctaType });
 });
 
 // GET /api/generate/stream/:jobId — SSE stream
@@ -127,6 +127,7 @@ router.post('/step', async (req, res) => {
       return res.json({ ok: true, imageB64 });
     }
 
+
     if (step === 'layout') {
       const usePalette = palette || post.palette || 'navy';
       const { html } = await runLayoutAgent({
@@ -161,12 +162,22 @@ router.post('/step', async (req, res) => {
   }
 });
 
-async function runPipeline(jobId, { brief, system, format, tone, palette, post_type, imageStyle, platform, goal, layoutStyle, context, ctaType }) {
+async function runPipeline(jobId, { brief, system, format, tone, palette, post_type, image_source, platform, goal, layoutStyle, context, ctaType }) {
   const job = jobs.get(jobId);
   const setStep = (step, status, data = {}) => { job.steps[step] = { status, ...data }; };
 
+  function assembleCaption(captionData) {
+    const obj = captionData.caption || {};
+    const text = typeof obj === 'string'
+      ? obj
+      : [obj.hook, obj.body, obj.soft_cta, obj.hard_cta].filter(Boolean).join('\n\n');
+    const tags = Array.isArray(obj.hashtags)
+      ? obj.hashtags.join(' ')
+      : (captionData.hashtags || '');
+    return { fullCaption: text, hashtagsStr: tags };
+  }
+
   try {
-    // Create draft post
     const draftResult = await query(
       `INSERT INTO posts (brief, system, format, tone, palette, post_type, status) VALUES ($1,$2,$3,$4,$5,$6,'draft') RETURNING id`,
       [brief, system, format, tone, palette, post_type]
@@ -174,7 +185,7 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
     const postId = draftResult.rows[0].id;
     job.postId = postId;
 
-    // Step 0: Creative Director — defines strategy and per-agent instructions
+    // ── Step 0: Creative Director ─────────────────────────────────────────────
     setStep('creative-director', 'running');
     let cd = null;
     try {
@@ -184,187 +195,100 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
       setStep('creative-director', 'skipped', { warning: err.message });
     }
 
-    // Step 1: Copy — enriched with CD instructions when available
+    // CD-derived design fields (with safe defaults)
+    const designStyle    = cd?.strategy?.design_style    || (platform === 'Instagram' ? 'hero-image' : 'editorial');
+    const imageTone      = cd?.strategy?.image_tone      || 'dark';
+    const effectivePalette = cd?.strategy?.palette_recommendation || palette;
+
+    // ── Step 1: Copy ──────────────────────────────────────────────────────────
     setStep('copy', 'running');
-    const copy = await runCopyAgent({ brief, system, tone, platform, postId, cdInstruction: cd?.instructions?.copy_agent });
+    let copy = await runCopyAgent({ brief, system, tone, platform, postId, cdInstruction: cd?.instructions?.copy_agent });
     await query('UPDATE posts SET headline=$1, bullets=$2, cta=$3 WHERE id=$4',
       [copy.headline, JSON.stringify(copy.bullets), copy.cta, postId]);
     setStep('copy', 'done', { headline: copy.headline });
 
-    // Step 2: Image
-    setStep('image', 'running');
+    // ── Step 2: Image (skip if svg or data-visual) ────────────────────────────
     let imageB64 = null;
-    let imageTone = 'dark';
-    try {
-      ({ imageB64, imageTone } = await runImageAgent({ imagePrompt: copy.image_prompt, aspectRatio: format, system, imageStyle, postId, cdInstruction: cd?.instructions?.image_agent }));
-      await query('UPDATE posts SET image_b64=$1 WHERE id=$2', [imageB64, postId]);
-      saveImageToDisk(postId, imageB64);
-      setStep('image', 'done');
-    } catch (err) {
-      setStep('image', 'skipped', { warning: err.message });
+    const useAiImage = image_source !== 'svg' && designStyle !== 'data-visual';
+    if (useAiImage) {
+      setStep('image', 'running');
+      try {
+        ({ imageB64 } = await runImageAgent({ imagePrompt: copy.image_prompt, aspectRatio: format, system, postId, cdInstruction: cd?.instructions?.image_agent }));
+        await query('UPDATE posts SET image_b64=$1 WHERE id=$2', [imageB64, postId]);
+        saveImageToDisk(postId, imageB64);
+        setStep('image', 'done');
+      } catch (err) {
+        setStep('image', 'skipped', { warning: err.message });
+      }
+    } else {
+      setStep('image', 'skipped', { warning: 'SVG background — no AI image generated' });
     }
 
-    // Step 3: Layout / Carousel
+    // ── Step 3: Layout ────────────────────────────────────────────────────────
     setStep('layout', 'running');
+    const layoutArgs = {
+      headline: copy.headline, headline_accent: copy.headline_accent,
+      subheadline: copy.subheadline, stats: sanitizeStats(copy.stats),
+      description: copy.description, bullets: copy.bullets, cta: copy.cta,
+      system, imageB64, format, palette: effectivePalette, platform, imageTone, designStyle,
+    };
 
     let layoutResult;
     if (post_type === 'carousel') {
-      // Carousel agent expands copy into 5 slides
       setStep('carousel', 'running');
-      const carouselSlides = await runCarouselAgent({
-        headline: copy.headline, bullets: copy.bullets, cta: copy.cta,
-        system, brief, postId,
-      });
+      const carouselSlides = await runCarouselAgent({ headline: copy.headline, bullets: copy.bullets, cta: copy.cta, system, brief, postId });
       setStep('carousel', 'done');
-
-      layoutResult = await runLayoutAgent({
-        headline: copy.headline,
-        headline_accent: copy.headline_accent,
-        subheadline: copy.subheadline,
-        stats: sanitizeStats(copy.stats),
-        description: copy.description,
-        bullets: copy.bullets,
-        cta: copy.cta,
-        system, imageB64, format, palette, platform, postType: 'carousel', carouselSlides, imageTone,
-      });
-
-      const slidesForDb = layoutResult.slides.map(s => ({
-        index: s.index, type: s.type, html: s.html,
-        title: s.title || s.point_title || s.cta_headline || '',
-      }));
-      await query('UPDATE posts SET post_html=$1, slides=$2 WHERE id=$3',
-        [layoutResult.html, JSON.stringify(slidesForDb), postId]);
-      setStep('layout', 'done', { html: layoutResult.html, slides: layoutResult.slides });
+      layoutResult = await runLayoutAgent({ ...layoutArgs, postType: 'carousel', carouselSlides });
+      const slidesForDb = layoutResult.slides.map(s => ({ index: s.index, type: s.type, html: s.html, title: s.title || s.point_title || s.cta_headline || '' }));
+      await query('UPDATE posts SET post_html=$1, slides=$2 WHERE id=$3', [layoutResult.html, JSON.stringify(slidesForDb), postId]);
     } else {
-      layoutResult = await runLayoutAgent({
-        headline: copy.headline,
-        headline_accent: copy.headline_accent,
-        subheadline: copy.subheadline,
-        stats: sanitizeStats(copy.stats),
-        description: copy.description,
-        bullets: copy.bullets,
-        cta: copy.cta,
-        system, imageB64, format, palette, platform, postType: 'single', imageTone,
-      });
+      layoutResult = await runLayoutAgent({ ...layoutArgs, postType: 'single' });
       await query('UPDATE posts SET post_html=$1 WHERE id=$2', [layoutResult.html, postId]);
-      setStep('layout', 'done', { html: layoutResult.html });
     }
+    setStep('layout', 'done', { html: layoutResult.html });
 
-    // ── helpers ──────────────────────────────────────────────────────────────
-    function assembleCaption(captionData) {
-      const obj = captionData.caption || {};
-      const text = typeof obj === 'string'
-        ? obj
-        : [obj.hook, obj.body, obj.soft_cta, obj.hard_cta].filter(Boolean).join('\n\n');
-      const tags = Array.isArray(obj.hashtags)
-        ? obj.hashtags.join(' ')
-        : (captionData.hashtags || '');
-      return { fullCaption: text, hashtagsStr: tags };
-    }
-
-    // ── Step 4: Caption ───────────────────────────────────────────────────────
-    setStep('caption', 'running');
-    const captionData = await runCaptionAgent({
-      headline: copy.headline, bullets: copy.bullets, cta: copy.cta,
-      system, brief, postId,
-    });
-    let { fullCaption, hashtagsStr } = assembleCaption(captionData);
-    await query('UPDATE posts SET caption=$1, hashtags=$2, status=$3 WHERE id=$4',
-      [fullCaption, hashtagsStr, 'ready', postId]);
-    setStep('caption', 'done', { caption: fullCaption, hashtags: hashtagsStr });
-
-    // ── Step 5: Validation — CD re-evaluates copy + caption quality ───────────
+    // ── Step 4: Validation — copy only (caption not yet generated) ────────────
     setStep('validation', 'running');
     try {
       const validation = await runCreativeDirectorValidation({
-        strategy: cd?.strategy,
-        copyOutput: copy,
-        captionOutput: { caption: fullCaption },
-        postId,
+        strategy: cd?.strategy, copyOutput: copy, captionOutput: null, postId, mode: 'copy',
       });
 
-      if (validation.final_status === 'needs_revision' && validation.failing_agent) {
+      if (validation.final_status === 'needs_revision' && validation.failing_agent === 'copy') {
         const note = validation.revision_note || '';
+        setStep('copy', 'running');
+        copy = await runCopyAgent({ brief: `${brief}\n\nREVISION: ${note}`, system, tone, platform, postId, cdInstruction: cd?.instructions?.copy_agent });
+        await query('UPDATE posts SET headline=$1, bullets=$2, cta=$3 WHERE id=$4',
+          [copy.headline, JSON.stringify(copy.bullets), copy.cta, postId]);
+        setStep('copy', 'done', { headline: copy.headline });
 
-        if (validation.failing_agent === 'copy') {
-          // Regenerate copy
-          setStep('copy', 'running');
-          const fixedCopy = await runCopyAgent({
-            brief: `${brief}\n\nREVISION: ${note}`, system, tone, platform, postId,
-            cdInstruction: cd?.instructions?.copy_agent,
-          });
-          await query('UPDATE posts SET headline=$1, bullets=$2, cta=$3 WHERE id=$4',
-            [fixedCopy.headline, JSON.stringify(fixedCopy.bullets), fixedCopy.cta, postId]);
-          setStep('copy', 'done', { headline: fixedCopy.headline });
-
-          // Re-render layout with fixed copy
-          setStep('layout', 'running');
-          if (post_type === 'carousel') {
-            const fixedCarousel = await runCarouselAgent({
-              headline: fixedCopy.headline, bullets: fixedCopy.bullets,
-              cta: fixedCopy.cta, system, brief, postId,
-            });
-            const fixedLayout = await runLayoutAgent({
-              headline: fixedCopy.headline, headline_accent: fixedCopy.headline_accent,
-              subheadline: fixedCopy.subheadline, stats: sanitizeStats(fixedCopy.stats),
-              description: fixedCopy.description, bullets: fixedCopy.bullets,
-              cta: fixedCopy.cta, system, imageB64, format, palette, platform,
-              postType: 'carousel', carouselSlides: fixedCarousel, imageTone,
-            });
-            const slidesForDb = fixedLayout.slides.map(s => ({
-              index: s.index, type: s.type, html: s.html,
-              title: s.title || s.point_title || s.cta_headline || '',
-            }));
-            await query('UPDATE posts SET post_html=$1, slides=$2 WHERE id=$3',
-              [fixedLayout.html, JSON.stringify(slidesForDb), postId]);
-            setStep('layout', 'done', { html: fixedLayout.html, slides: fixedLayout.slides });
-          } else {
-            const fixedLayout = await runLayoutAgent({
-              headline: fixedCopy.headline, headline_accent: fixedCopy.headline_accent,
-              subheadline: fixedCopy.subheadline, stats: sanitizeStats(fixedCopy.stats),
-              description: fixedCopy.description, bullets: fixedCopy.bullets,
-              cta: fixedCopy.cta, system, imageB64, format, palette, platform, postType: 'single', imageTone,
-            });
-            await query('UPDATE posts SET post_html=$1 WHERE id=$2', [fixedLayout.html, postId]);
-            setStep('layout', 'done', { html: fixedLayout.html });
-          }
-
-          // Regenerate caption with fixed copy
-          setStep('caption', 'running');
-          const fixedCaptionData = await runCaptionAgent({
-            headline: fixedCopy.headline, bullets: fixedCopy.bullets,
-            cta: fixedCopy.cta, system, brief, postId,
-          });
-          const fixed = assembleCaption(fixedCaptionData);
-          fullCaption  = fixed.fullCaption;
-          hashtagsStr  = fixed.hashtagsStr;
-          await query('UPDATE posts SET caption=$1, hashtags=$2 WHERE id=$3',
-            [fullCaption, hashtagsStr, postId]);
-          setStep('caption', 'done', { caption: fullCaption });
-
-        } else if (validation.failing_agent === 'caption') {
-          // Regenerate caption only
-          setStep('caption', 'running');
-          const fixedCaptionData = await runCaptionAgent({
-            headline: copy.headline, bullets: copy.bullets, cta: copy.cta,
-            system, brief: `${brief}\n\nREVISION: ${note}`, postId,
-          });
-          const fixed = assembleCaption(fixedCaptionData);
-          fullCaption  = fixed.fullCaption;
-          hashtagsStr  = fixed.hashtagsStr;
-          await query('UPDATE posts SET caption=$1, hashtags=$2 WHERE id=$3',
-            [fullCaption, hashtagsStr, postId]);
-          setStep('caption', 'done', { caption: fullCaption });
+        setStep('layout', 'running');
+        const fixedArgs = { ...layoutArgs, headline: copy.headline, headline_accent: copy.headline_accent, subheadline: copy.subheadline, stats: sanitizeStats(copy.stats), description: copy.description, bullets: copy.bullets, cta: copy.cta };
+        if (post_type === 'carousel') {
+          const fixedCarousel = await runCarouselAgent({ headline: copy.headline, bullets: copy.bullets, cta: copy.cta, system, brief, postId });
+          const fixedLayout = await runLayoutAgent({ ...fixedArgs, postType: 'carousel', carouselSlides: fixedCarousel });
+          const slidesForDb = fixedLayout.slides.map(s => ({ index: s.index, type: s.type, html: s.html, title: s.title || s.point_title || s.cta_headline || '' }));
+          await query('UPDATE posts SET post_html=$1, slides=$2 WHERE id=$3', [fixedLayout.html, JSON.stringify(slidesForDb), postId]);
+          setStep('layout', 'done', { html: fixedLayout.html });
+        } else {
+          const fixedLayout = await runLayoutAgent({ ...fixedArgs, postType: 'single' });
+          await query('UPDATE posts SET post_html=$1 WHERE id=$2', [fixedLayout.html, postId]);
+          setStep('layout', 'done', { html: fixedLayout.html });
         }
       }
 
-      setStep('validation', 'done', {
-        final_status: validation.final_status,
-        issues: validation.issues_found,
-      });
+      setStep('validation', 'done', { final_status: validation.final_status, issues: validation.issues_found });
     } catch (err) {
       setStep('validation', 'skipped', { warning: err.message });
     }
+
+    // ── Step 5: Caption — runs on validated copy ──────────────────────────────
+    setStep('caption', 'running');
+    const captionData = await runCaptionAgent({ headline: copy.headline, bullets: copy.bullets, cta: copy.cta, system, brief, postId });
+    const { fullCaption, hashtagsStr } = assembleCaption(captionData);
+    await query('UPDATE posts SET caption=$1, hashtags=$2, status=$3 WHERE id=$4',
+      [fullCaption, hashtagsStr, 'ready', postId]);
+    setStep('caption', 'done', { caption: fullCaption, hashtags: hashtagsStr });
 
     job.status = 'done';
   } catch (err) {
