@@ -147,7 +147,8 @@ async function runLayoutAgent({ headline, headline_accent, subheadline, stats, d
     return { html: slides[0]?.html || '', slides };
   }
 
-  const html = buildPostHTML({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format, palette, platform, imageTone, designStyle });
+  const seed = (headline || '') + (system || '');
+  const html = buildPostHTML({ headline, headline_accent, subheadline, stats, description, bullets, cta, system, imageB64, format, palette, platform, imageTone, designStyle, seed });
   return { html, slides: [] };
 }
 

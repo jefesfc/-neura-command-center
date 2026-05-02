@@ -8,14 +8,18 @@ try {
 
 // ── System badge labels ───────────────────────────────────────────────────────
 const SYSTEM_BADGE = {
-  'sistema-01': 'Sistema 01',
-  'sistema-02': 'Sistema 02',
-  'sistema-03': 'Sistema 03',
-  'neura':      'Neura',
-  'ai-agents':  'AI Agents',
-  'crm':        'AI CRM',
-  'rag':        'RAG',
-  'ai':         'AI Systems',
+  'system-lead-engine':   'Lead Engine',
+  'system-ai-conversion': 'AI Conversion',
+  'system-ai-os':         'AI Operating System',
+  'neura':                'Neura',
+  'ai-agents':            'AI Agents',
+  'crm':                  'AI CRM',
+  'rag':                  'RAG',
+  'ai':                   'AI Systems',
+  // legacy keys
+  'sistema-01': 'Lead Engine',
+  'sistema-02': 'AI Conversion',
+  'sistema-03': 'AI Operating System',
 };
 
 // ── Brand palettes ────────────────────────────────────────────────────────────
@@ -82,6 +86,21 @@ const STOP_WORDS = new Set([
   'been','not','no','so','do','does','did','your','our','their','we','you',
 ]);
 
+// Deterministic PRNG seeded from post content — guarantees a unique but
+// reproducible SVG for every distinct headline+system combination.
+function mkRng(seed) {
+  let h = 2166136261;
+  for (let i = 0; i < (seed || '').length; i++) {
+    h = (Math.imul(h ^ seed.charCodeAt(i), 16777619)) >>> 0;
+  }
+  if (h === 0) h = 1;
+  return function () {
+    h ^= h << 13; h ^= h >>> 17; h ^= h << 5;
+    h >>>= 0;
+    return h / 4294967296;
+  };
+}
+
 function applyAccent(headline, accent_word, accentColor) {
   if (!headline) return '';
   const w = (accent_word || '').trim();
@@ -141,70 +160,90 @@ function watermarkEl(p, isStory) {
 // chartUp: pixels to shift chart upward from base IG position
 //   0  → Instagram (chart rect y=170, bars start ~y=345)
 //   80 → Facebook  (chart rect y=90,  bars start ~y=265)
+//
+// seed: headline + system string — drives unique bar heights, node positions,
+//       glow placement. Same seed always produces the same design.
 // ═════════════════════════════════════════════════════════════════════════════
-function buildSvgBg(p, chartUp = 0) {
+function buildSvgBg(p, chartUp = 0, seed = '') {
+  const rng = mkRng(seed);
   const a  = (o) => `rgba(${hexToRgb(p.accent)},${o})`;
   const a2 = (o) => `rgba(${hexToRgb(p.accent2)},${o})`;
   const u  = (y) => y - chartUp;
 
-  // IG base bar top y-values and trend y-values
-  const bY = [345, 315, 332, 298, 322, 278, 300, 248, 228].map(u);
-  const tY = [338, 308, 325, 291, 315, 271, 293, 241, 221].map(u);
+  // ── Bar heights — rising trend + per-post noise ───────────────────────────
+  const baseTrend    = [95, 112, 100, 130, 115, 152, 135, 175, 195];
+  const CHART_BOTTOM = 465;
+  const barH = baseTrend.map(b => Math.max(55, Math.min(268, Math.round(b * (0.78 + rng() * 0.44)))));
+  const bY   = barH.map(h => u(CHART_BOTTOM - h));
+  const tY   = bY.map((y, i) => y + Math.round(barH[i] * 0.05 + 2));
+
+  // ── Glow ellipse positions ────────────────────────────────────────────────
+  const g1x = Math.round(48 + rng() * 30);  const g1y = Math.round(12 + rng() * 28);
+  const g2x = Math.round(68 + rng() * 24);  const g2y = Math.round(62 + rng() * 22);
+  const g3x = Math.round(6  + rng() * 22);  const g3y = Math.round(8  + rng() * 18);
+
+  // ── Network node positions (upper-right quadrant, ±45px variance) ─────────
+  const nodeBase = [
+    [635, 72], [798, 194], [896, 132], [726, 318], [866, 374],
+    [708, 154], [878, 474], [976, 514], [1018, 294],
+  ];
+  const nodes = nodeBase.map(([bx, by]) => ({
+    x: Math.round(Math.max(20, Math.min(1060, bx + (rng() - 0.5) * 90))),
+    y: Math.round(Math.max(20, Math.min(560,  by + (rng() - 0.5) * 64))),
+  }));
+
+  // ── Bar fill opacities ────────────────────────────────────────────────────
+  const barFill = Array.from({ length: 9 }, (_, i) => {
+    const v = (0.28 + rng() * 0.30).toFixed(2);
+    return i % 2 === 0 ? a(v) : a2(v);
+  });
+
+  // ── Scattered lower nodes (inside chart area) ─────────────────────────────
+  const sn = Array.from({ length: 4 }, () => ({
+    x: Math.round(150 + rng() * 430),
+    y: u(Math.round(360 + rng() * 88)),
+  }));
+
+  const BARS_X  = [80, 190, 300, 410, 520, 630, 740, 850, 960];
+  const TREND_X = [104, 214, 324, 434, 544, 654, 764, 874, 984];
+  const nodeR   = [4, 6, 3, 5, 4, 3, 3, 2, 4];
+  const nodeOp  = [0.70, 0.65, 0.55, 0.60, 0.55, 0.50, 0.40, 0.35, 0.50];
+
+  const trendPts = TREND_X.map((x, i) => `${x},${tY[i]}`).join(' ');
 
   return `
   <div style="position:absolute;inset:0;z-index:1;
     background:
-      radial-gradient(ellipse at 65% 35%,${a('0.13')} 0%,transparent 42%),
-      radial-gradient(ellipse at 90% 80%,${a2('0.08')} 0%,transparent 35%),
-      radial-gradient(ellipse at 15% 20%,${a('0.06')} 0%,transparent 30%),
+      radial-gradient(ellipse at ${g1x}% ${g1y}%,${a('0.13')} 0%,transparent 42%),
+      radial-gradient(ellipse at ${g2x}% ${g2y}%,${a2('0.08')} 0%,transparent 35%),
+      radial-gradient(ellipse at ${g3x}% ${g3y}%,${a('0.06')} 0%,transparent 30%),
       linear-gradient(160deg,#071828 0%,#0c2644 30%,#071420 60%,#030a12 100%);">
   </div>
   <svg style="position:absolute;inset:0;z-index:2;width:100%;height:100%;" viewBox="0 0 1080 1080" preserveAspectRatio="xMidYMid slice">
-    <line x1="680" y1="80"  x2="850" y2="200" stroke="${a('0.12')}" stroke-width="1"/>
-    <line x1="850" y1="200" x2="960" y2="140" stroke="${a('0.10')}" stroke-width="1"/>
-    <line x1="850" y1="200" x2="780" y2="320" stroke="${a('0.08')}" stroke-width="1"/>
-    <line x1="780" y1="320" x2="920" y2="380" stroke="${a2('0.08')}" stroke-width="1"/>
-    <line x1="920" y1="380" x2="1020" y2="300" stroke="${a('0.07')}" stroke-width="1"/>
-    <line x1="680" y1="80"  x2="760" y2="160" stroke="${a('0.09')}" stroke-width="1"/>
-    <line x1="760" y1="160" x2="850" y2="200" stroke="${a('0.09')}" stroke-width="1"/>
-    <line x1="920" y1="380" x2="880" y2="480" stroke="${a('0.07')}" stroke-width="1"/>
-    <line x1="880" y1="480" x2="980" y2="520" stroke="${a('0.06')}" stroke-width="1"/>
-    <line x1="1000" y1="200" x2="1060" y2="350" stroke="${a2('0.07')}" stroke-width="1"/>
+    <line x1="${nodes[0].x}" y1="${nodes[0].y}" x2="${nodes[1].x}" y2="${nodes[1].y}" stroke="${a('0.12')}" stroke-width="1"/>
+    <line x1="${nodes[1].x}" y1="${nodes[1].y}" x2="${nodes[2].x}" y2="${nodes[2].y}" stroke="${a('0.10')}" stroke-width="1"/>
+    <line x1="${nodes[1].x}" y1="${nodes[1].y}" x2="${nodes[3].x}" y2="${nodes[3].y}" stroke="${a('0.08')}" stroke-width="1"/>
+    <line x1="${nodes[3].x}" y1="${nodes[3].y}" x2="${nodes[4].x}" y2="${nodes[4].y}" stroke="${a2('0.08')}" stroke-width="1"/>
+    <line x1="${nodes[4].x}" y1="${nodes[4].y}" x2="${nodes[8].x}" y2="${nodes[8].y}" stroke="${a('0.07')}" stroke-width="1"/>
+    <line x1="${nodes[0].x}" y1="${nodes[0].y}" x2="${nodes[5].x}" y2="${nodes[5].y}" stroke="${a('0.09')}" stroke-width="1"/>
+    <line x1="${nodes[5].x}" y1="${nodes[5].y}" x2="${nodes[1].x}" y2="${nodes[1].y}" stroke="${a('0.09')}" stroke-width="1"/>
+    <line x1="${nodes[4].x}" y1="${nodes[4].y}" x2="${nodes[6].x}" y2="${nodes[6].y}" stroke="${a('0.07')}" stroke-width="1"/>
+    <line x1="${nodes[6].x}" y1="${nodes[6].y}" x2="${nodes[7].x}" y2="${nodes[7].y}" stroke="${a('0.06')}" stroke-width="1"/>
+    <line x1="${nodes[8].x}" y1="${nodes[8].y}" x2="${nodes[2].x}" y2="${nodes[2].y}" stroke="${a2('0.07')}" stroke-width="1"/>
     <rect x="0" y="${u(170)}" width="1080" height="295" fill="${a('0.018')}"/>
-    <rect x="80"  y="${bY[0]}" width="48" height="120" rx="3" fill="${a('0.36')}"/>
-    <rect x="190" y="${bY[1]}" width="48" height="150" rx="3" fill="${a('0.42')}"/>
-    <rect x="300" y="${bY[2]}" width="48" height="133" rx="3" fill="${a2('0.38')}"/>
-    <rect x="410" y="${bY[3]}" width="48" height="167" rx="3" fill="${a('0.48')}"/>
-    <rect x="520" y="${bY[4]}" width="48" height="143" rx="3" fill="${a('0.40')}"/>
-    <rect x="630" y="${bY[5]}" width="48" height="187" rx="3" fill="${a2('0.48')}"/>
-    <rect x="740" y="${bY[6]}" width="48" height="165" rx="3" fill="${a('0.44')}"/>
-    <rect x="850" y="${bY[7]}" width="48" height="217" rx="3" fill="${a('0.54')}"/>
-    <rect x="960" y="${bY[8]}" width="48" height="237" rx="3" fill="${a2('0.58')}"/>
-    <polyline points="104,${tY[0]} 214,${tY[1]} 324,${tY[2]} 434,${tY[3]} 544,${tY[4]} 654,${tY[5]} 764,${tY[6]} 874,${tY[7]} 984,${tY[8]}"
-      fill="none" stroke="${a2('0.88')}" stroke-width="2.5" stroke-dasharray="6 3"/>
-    <polyline points="104,${tY[0]} 214,${tY[1]} 324,${tY[2]} 434,${tY[3]} 544,${tY[4]} 654,${tY[5]} 764,${tY[6]} 874,${tY[7]} 984,${tY[8]}"
-      fill="none" stroke="${a2('0.20')}" stroke-width="9"/>
-    <circle cx="680" cy="80"  r="4"  fill="${a('0.70')}"/>
-    <circle cx="850" cy="200" r="6"  fill="${a('0.65')}"/>
-    <circle cx="960" cy="140" r="3"  fill="${a('0.55')}"/>
-    <circle cx="780" cy="320" r="5"  fill="${a2('0.60')}"/>
-    <circle cx="920" cy="380" r="4"  fill="${a('0.55')}"/>
-    <circle cx="760" cy="160" r="3"  fill="${a('0.50')}"/>
-    <circle cx="880" cy="480" r="3"  fill="${a('0.40')}"/>
-    <circle cx="980" cy="520" r="2"  fill="${a('0.35')}"/>
-    <circle cx="1020" cy="300" r="4" fill="${a2('0.50')}"/>
-    <circle cx="850" cy="200" r="14" fill="${a('0.12')}"/>
-    <circle cx="850" cy="200" r="22" fill="${a('0.06')}"/>
-    <circle cx="200" cy="380" r="3"  fill="${a('0.22')}"/>
-    <circle cx="350" cy="420" r="2"  fill="${a2('0.18')}"/>
-    <circle cx="480" cy="360" r="3"  fill="${a('0.18')}"/>
-    <circle cx="560" cy="450" r="2"  fill="${a('0.14')}"/>
-    <line x1="200" y1="380" x2="350" y2="420" stroke="${a('0.07')}" stroke-width="1"/>
-    <line x1="350" y1="420" x2="480" y2="360" stroke="${a('0.06')}" stroke-width="1"/>
-    <line x1="480" y1="360" x2="560" y2="450" stroke="${a2('0.06')}" stroke-width="1"/>
+    ${BARS_X.map((x, i) => `<rect x="${x}" y="${bY[i]}" width="48" height="${barH[i]}" rx="3" fill="${barFill[i]}"/>`).join('\n    ')}
+    <polyline points="${trendPts}" fill="none" stroke="${a2('0.20')}" stroke-width="9"/>
+    <polyline points="${trendPts}" fill="none" stroke="${a2('0.88')}" stroke-width="2.5" stroke-dasharray="6 3"/>
+    <circle cx="${nodes[1].x}" cy="${nodes[1].y}" r="14" fill="${a('0.12')}"/>
+    <circle cx="${nodes[1].x}" cy="${nodes[1].y}" r="22" fill="${a('0.06')}"/>
+    ${nodes.map((n, i) => `<circle cx="${n.x}" cy="${n.y}" r="${nodeR[i]}" fill="${i % 2 === 0 ? a(nodeOp[i].toFixed(2)) : a2(nodeOp[i].toFixed(2))}"/>`).join('\n    ')}
+    ${sn.map((n, i) => `<circle cx="${n.x}" cy="${n.y}" r="${i < 2 ? 3 : 2}" fill="${i % 2 === 0 ? a('0.22') : a2('0.18')}"/>`).join('\n    ')}
+    <line x1="${sn[0].x}" y1="${sn[0].y}" x2="${sn[1].x}" y2="${sn[1].y}" stroke="${a('0.07')}" stroke-width="1"/>
+    <line x1="${sn[1].x}" y1="${sn[1].y}" x2="${sn[2].x}" y2="${sn[2].y}" stroke="${a('0.06')}" stroke-width="1"/>
+    <line x1="${sn[2].x}" y1="${sn[2].y}" x2="${sn[3].x}" y2="${sn[3].y}" stroke="${a2('0.06')}" stroke-width="1"/>
   </svg>
   <div style="position:absolute;inset:0;z-index:3;opacity:0.028;
-    background-image:linear-gradient(rgba(31,162,184,1) 1px,transparent 1px),linear-gradient(90deg,rgba(31,162,184,1) 1px,transparent 1px);
+    background-image:linear-gradient(rgba(${hexToRgb(p.accent)},1) 1px,transparent 1px),linear-gradient(90deg,rgba(${hexToRgb(p.accent)},1) 1px,transparent 1px);
     background-size:90px 90px;">
   </div>`;
 }
@@ -223,7 +262,7 @@ function buildSvgBg(p, chartUp = 0) {
 //   8. Content (flex column: top bar | 440px spacer | accent line | hook | H1 | CTA)
 //   9. Watermark
 // ═════════════════════════════════════════════════════════════════════════════
-function buildInstagramHTML({ headline, headline_accent, subheadline, cta, system, imageB64, format, palette, imageTone = 'dark', designStyle = 'hero-image' }) {
+function buildInstagramHTML({ headline, headline_accent, subheadline, cta, system, imageB64, format, palette, imageTone = 'dark', designStyle = 'hero-image', seed = '' }) {
   const isStory = format === '9:16';
   const W = 1080, H = isStory ? 1920 : 1080;
   const p = PALETTES[palette] || PALETTES.navy;
@@ -268,7 +307,7 @@ ${FONTS}
 <body>
 <div style="position:relative;width:${W}px;height:${H}px;${bgStyle}font-family:'Inter',sans-serif;">
 
-  ${isSvg ? buildSvgBg(p, 0) : ''}
+  ${isSvg ? buildSvgBg(p, 0, seed) : ''}
 
   <!-- L3: Cinematic gradient — transparent top, dark bottom -->
   <div style="position:absolute;inset:0;z-index:4;
@@ -339,7 +378,7 @@ ${FONTS}
 //   6. Content (flex column: top bar push → editorial block at bottom)
 //   7. Watermark
 // ═════════════════════════════════════════════════════════════════════════════
-function buildFacebookHTML({ headline, headline_accent, subheadline, description, bullets, cta, system, imageB64, format, palette, imageTone = 'dark', designStyle = 'editorial' }) {
+function buildFacebookHTML({ headline, headline_accent, subheadline, description, bullets, cta, system, imageB64, format, palette, imageTone = 'dark', designStyle = 'editorial', seed = '' }) {
   const isStory    = format === '9:16';
   const isLandscape = format === '1.91:1';
   const W = isLandscape ? 1200 : 1080;
@@ -407,7 +446,7 @@ ${FONTS}
 <body>
 <div style="position:relative;width:${W}px;height:${H}px;${bgStyle}font-family:'Inter',sans-serif;">
 
-  ${isSvg ? buildSvgBg(p, 80) : ''}
+  ${isSvg ? buildSvgBg(p, 80, seed) : ''}
 
   <!-- L3: Cinematic overlay — heavier at bottom where text lives -->
   <div style="position:absolute;inset:0;z-index:4;
@@ -471,11 +510,11 @@ ${FONTS}
 }
 
 // ── Router ────────────────────────────────────────────────────────────────────
-function buildPostHTML({ headline, headline_accent, subheadline, description, bullets, cta, system, imageB64, format = '1:1', palette = 'navy', platform = 'Instagram', imageTone = 'dark', designStyle = 'hero-image' }) {
+function buildPostHTML({ headline, headline_accent, subheadline, description, bullets, cta, system, imageB64, format = '1:1', palette = 'navy', platform = 'Instagram', imageTone = 'dark', designStyle = 'hero-image', seed = '' }) {
   const isIG = (platform || 'Instagram').toLowerCase() === 'instagram';
   return isIG
-    ? buildInstagramHTML({ headline, headline_accent, subheadline, cta, system, imageB64, format, palette, imageTone, designStyle })
-    : buildFacebookHTML({ headline, headline_accent, subheadline, description, bullets, cta, system, imageB64, format, palette, imageTone, designStyle });
+    ? buildInstagramHTML({ headline, headline_accent, subheadline, cta, system, imageB64, format, palette, imageTone, designStyle, seed })
+    : buildFacebookHTML({ headline, headline_accent, subheadline, description, bullets, cta, system, imageB64, format, palette, imageTone, designStyle, seed });
 }
 
 module.exports = { buildPostHTML };
