@@ -70,6 +70,11 @@ const IMAGE_STYLES = [
   { value: 'hibrido',       label: 'Hybrid',         desc: 'Real scene with digital UI overlays' },
 ];
 
+const IMAGE_SOURCES = [
+  { value: 'ai',  label: 'AI Image',  desc: 'Gemini genera imagen real' },
+  { value: 'svg', label: 'SVG Chart', desc: 'Fondo de datos animado, sin API de imagen' },
+];
+
 const CTA_TYPES = [
   { value: 'auto', label: 'Auto' },
   { value: 'soft', label: 'Soft' },
@@ -101,6 +106,7 @@ export default function PostGenerator() {
   const sseRef    = useRef(null);
 
   const [imageStyle, setImageStyle]     = useState('fotorrealista');
+  const [imageSource, setImageSource]   = useState('ai');
   const [platform, setPlatform]         = useState('Instagram');
   const [goal, setGoal]                 = useState('authority');
   const [layoutStyle, setLayoutStyle]   = useState('cinematic_dense');
@@ -148,7 +154,7 @@ export default function PostGenerator() {
     const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, brief: briefWithLang, imageStyle, platform, goal, layoutStyle, context, ctaType }),
+      body: JSON.stringify({ ...form, brief: briefWithLang, imageStyle, image_source: imageSource, platform, goal, layoutStyle, context, ctaType }),
     });
     const { jobId, error } = await res.json();
     if (error || !jobId) { setPhase('error'); return; }
@@ -464,29 +470,43 @@ export default function PostGenerator() {
                 </div>
               </div>
 
-              {/* 7. Image Style */}
+              {/* 7. Image Source + Style */}
               <div>
-                <label className="label mb-2 block">Image Style</label>
-                <div className="flex flex-col gap-1.5">
-                  {IMAGE_STYLES.map(style => (
-                    <label key={style.value}
-                      className={`flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-all ${
-                        imageStyle === style.value ? 'border-teal/50 bg-teal/8' : 'border-black/10 hover:border-black/20'
+                <label className="label mb-2 block">Background</label>
+                <div className="flex gap-2 mb-3">
+                  {IMAGE_SOURCES.map(src => (
+                    <button key={src.value} onClick={() => setImageSource(src.value)}
+                      className={`flex-1 p-3 rounded-xl border text-left transition-all ${
+                        imageSource === src.value ? 'border-teal/60 bg-teal/8' : 'border-white/10 hover:border-white/20'
                       }`}
                     >
-                      <input
-                        type="radio" name="imageStyle" value={style.value}
-                        checked={imageStyle === style.value}
-                        onChange={() => setImageStyle(style.value)}
-                        className="accent-teal flex-shrink-0"
-                      />
-                      <div>
-                        <div className="text-theme text-xs font-semibold">{style.label}</div>
-                        <div className="text-theme-muted text-[10px] mt-0.5">{style.desc}</div>
-                      </div>
-                    </label>
+                      <div className={`text-xs font-semibold mb-0.5 ${imageSource === src.value ? 'text-theme' : 'text-theme-muted'}`}>{src.label}</div>
+                      <div className="text-[10px] text-theme-muted leading-snug">{src.desc}</div>
+                    </button>
                   ))}
                 </div>
+                {imageSource === 'ai' && (
+                  <div className="flex flex-col gap-1.5">
+                    {IMAGE_STYLES.map(style => (
+                      <label key={style.value}
+                        className={`flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-all ${
+                          imageStyle === style.value ? 'border-teal/50 bg-teal/8' : 'border-black/10 hover:border-black/20'
+                        }`}
+                      >
+                        <input
+                          type="radio" name="imageStyle" value={style.value}
+                          checked={imageStyle === style.value}
+                          onChange={() => setImageStyle(style.value)}
+                          className="accent-teal flex-shrink-0"
+                        />
+                        <div>
+                          <div className="text-theme text-xs font-semibold">{style.label}</div>
+                          <div className="text-theme-muted text-[10px] mt-0.5">{style.desc}</div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* 8. Optional Context */}
