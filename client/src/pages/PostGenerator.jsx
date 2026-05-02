@@ -3,14 +3,14 @@ import { Wand2, Download, RefreshCw, Check, Copy, ChevronLeft, ChevronRight, Che
 import ProgressStep from '../components/ProgressStep';
 
 const SYSTEMS = [
-  { value: 'sistema-01', label: 'Sistema 01 — AI Lead Engine' },
-  { value: 'sistema-02', label: 'Sistema 02 — AI Conversion Engine' },
-  { value: 'sistema-03', label: 'Sistema 03 — AI Operating System' },
-  { value: 'neura',      label: 'NeuraSolutions' },
-  { value: 'ai-agents',  label: 'AI Agents' },
-  { value: 'crm',        label: 'AI CRM' },
-  { value: 'rag',        label: 'RAG — Business Knowledge AI' },
-  { value: 'ai',         label: 'AI Implementation' },
+  { value: 'system-lead-engine',     label: 'System - Lead Engine' },
+  { value: 'system-ai-conversion',   label: 'System - AI Conversion System' },
+  { value: 'system-ai-os',           label: 'System - AI Operating System' },
+  { value: 'neura',                  label: 'NeuraSolutions' },
+  { value: 'ai-agents',              label: 'AI Agents' },
+  { value: 'crm',                    label: 'AI CRM' },
+  { value: 'rag',                    label: 'RAG — Business Knowledge AI' },
+  { value: 'ai',                     label: 'AI Implementation' },
 ];
 
 const FORMATS = [
@@ -91,7 +91,7 @@ const FORMAT_SIZES = {
 
 export default function PostGenerator() {
   const [form, setForm] = useState({
-    brief: '', system: 'sistema-01', format: '1:1',
+    brief: '', system: 'system-lead-engine', format: '1:1',
     tone: 'auto', palette: 'navy', post_type: 'single',
   });
   const [phase, setPhase]       = useState('idle');
