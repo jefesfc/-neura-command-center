@@ -4,6 +4,30 @@ const { query } = require('../db');
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const SYSTEM_BRIEFS = {
+  'system-lead-engine': `
+SYSTEM: System - Lead Engine
+WHAT IT DOES: Captures leads from every channel (ads, web, social), qualifies them automatically using AI scoring models, and nurtures them through intelligent sequences until they're ready to buy.
+CORE VALUE: Eliminates manual lead qualification. Sales team only speaks to hot, ready prospects.
+RESULTS: Significantly more qualified leads, far less time wasted on cold prospects, predictable pipeline.
+TARGET: Business owners and sales directors with lead generation problems.
+KEY MESSAGES: Automatic lead scoring, multi-channel capture, intelligent nurture sequences, sales pipeline on autopilot.`,
+
+  'system-ai-conversion': `
+SYSTEM: System - AI Conversion System
+WHAT IT DOES: Takes qualified leads and converts them into paying clients through hyper-personalized AI-powered follow-up sequences. Times messages perfectly, handles objections automatically, and closes deals around the clock.
+CORE VALUE: Never lose a deal to poor follow-up again. Every lead gets the perfect message at the perfect moment.
+RESULTS: Higher close rates, deals closed while you sleep, zero leads fall through the cracks.
+TARGET: Sales teams and business owners struggling with follow-up consistency and conversion rates.
+KEY MESSAGES: Automated follow-up, objection handling, perfect timing, closes deals on autopilot.`,
+
+  'system-ai-os': `
+SYSTEM: System - AI Operating System
+WHAT IT DOES: Connects every tool and department in your business through a central AI brain. Automates repetitive workflows, eliminates manual data entry, integrates all software, and delivers real-time business intelligence.
+CORE VALUE: Your entire business runs like a machine — while you focus on growth.
+RESULTS: Dramatic reduction in manual tasks, zero human error in operations, real-time visibility across the business.
+TARGET: Business owners and operations managers drowning in manual processes and disconnected tools.
+KEY MESSAGES: Business automation, workflow integration, operational intelligence, scale without hiring.`,
+
   'sistema-01': `
 SYSTEM: Sistema 01 — AI Lead Engine
 WHAT IT DOES: Captures leads from every channel (ads, web, social), qualifies them automatically using AI scoring models, and nurtures them through intelligent sequences until they're ready to buy.
@@ -78,6 +102,9 @@ const SYSTEM_LABELS = {
   'crm': 'AI CRM',
   'rag': 'RAG — Business Knowledge AI',
   'ai': 'AI Implementation',
+  'system-lead-engine':   'System - Lead Engine',
+  'system-ai-conversion': 'System - AI Conversion System',
+  'system-ai-os':         'System - AI Operating System',
 };
 
 const SYSTEM_PROMPT = `You are the Copy Agent for NeuraSolutions — a B2B AI systems company.
@@ -124,32 +151,29 @@ async function runCopyAgent({ brief, system, tone, platform = 'Instagram', postI
 
   // ── Platform-specific instructions and examples ─────────────────────────────
   const platformRules = isIG ? `
-PLATFORM: Instagram — VISUAL FIRST
+PLATFORM: Instagram — ONE IMAGE. ONE HEADLINE. ONE ACTION.
 The image is the hero. Text is minimal. Every word must earn its place.
 
-subheadline → HOOK: max 5 words, punchy tension-setter. NOT a sentence. Examples:
-  "YOUR SYSTEM IS BROKEN." / "LEADS DON'T CLOSE THEMSELVES." / "WRONG TOOL. WRONG RESULT."
-headline → THE BIG STATEMENT: max 6 words, dominates the frame visually. Bold truth.
-  Examples: "Your system does." / "Automate or fall behind." / "The pipeline runs itself."
-description → return "" (not displayed on Instagram)
-bullets → return [] (not displayed on Instagram)
-stats → 3 qualitative single words — shown as accent below the headline
-cta → max 30 chars, sharp action
+subheadline → HOOK: 3–6 words, punchy tension-setter. ALL CAPS style. NOT a full sentence.
+  Examples: "YOUR CRM IS LYING." / "LEADS DON'T CLOSE THEMSELVES." / "CHAOS ISN'T PROFITABLE."
+headline → THE BIG STATEMENT: 4–8 words, dominates the frame. Bold provocative truth. Verb-forward.
+  Examples: "Your system does the selling." / "Automate or fall behind." / "Leads don't wait for follow-up."
+headline_accent → 1–3 words from the headline to highlight in accent color (must be an exact substring)
+description → return "" (empty — not displayed on Instagram)
+bullets → return [] (empty — not displayed on Instagram)
+stats → return [] (empty — not displayed on Instagram)
+cta → max 32 chars, sharp imperative action
 
 EXAMPLE:
 {
   "headline": "Your system closes deals.",
   "headline_accent": "closes deals",
-  "subheadline": "Your CRM doesn't.",
-  "stats": [
-    { "value": "Automated", "label": "Lead Flow" },
-    { "value": "Precise", "label": "Targeting" },
-    { "value": "Scalable", "label": "Pipeline" }
-  ],
+  "subheadline": "YOUR CRM DOESN'T.",
+  "stats": [],
   "description": "",
   "bullets": [],
   "cta": "Book a strategy call",
-  "image_prompt": "Futuristic dark CRM dashboard with glowing pipeline nodes and AI scoring interface"
+  "image_prompt": "Futuristic dark CRM interface with glowing pipeline nodes, deep navy, cinematic"
 }` : `
 PLATFORM: Facebook — EDITORIAL
 Users read. Tell a story. Hook → problem → solution → proof → action.
@@ -161,7 +185,7 @@ description → 1 narrative sentence, max 90 chars. Sets up the solution.
   Example: "We design AI systems that capture, qualify and convert leads — automatically."
 bullets → 2-3 specific outcome lines. Concrete, no fluff.
   Example: ["Qualifies leads without human input", "Triggers follow-ups at the right moment", "Gives your team full pipeline visibility"]
-stats → 3 qualitative single words — shown inline as proof pillars
+stats → return [] (not displayed — skip)
 cta → max 35 chars, direct
 
 EXAMPLE:

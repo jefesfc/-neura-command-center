@@ -101,6 +101,69 @@ function mkRng(seed) {
   };
 }
 
+// ═════════════════════════════════════════════════════════════════════════════
+// INSTAGRAM ABSTRACT BACKGROUND — AI particle network, unique per post
+// Replaces the bar-chart SVG. Seeded from headline+system, so every post
+// gets a distinct composition without extra API calls.
+// ═════════════════════════════════════════════════════════════════════════════
+function buildInstagramBg(p, seed) {
+  const rng = mkRng(seed);
+  const a  = (op) => `rgba(${hexToRgb(p.accent)},${op})`;
+  const a2 = (op) => `rgba(${hexToRgb(p.accent2)},${op})`;
+
+  // 3 atmospheric glow ellipses — positions seeded
+  const g1x = Math.round(42 + rng() * 38); const g1y = Math.round(6  + rng() * 34);
+  const g2x = Math.round(60 + rng() * 30); const g2y = Math.round(55 + rng() * 28);
+  const g3x = Math.round(2  + rng() * 28); const g3y = Math.round(3  + rng() * 24);
+
+  // 22 nodes — 6 rng calls each (x, y, hubRand, useA2Rand, rRand, opRand)
+  const nodes = Array.from({ length: 22 }, () => {
+    const x    = Math.round(22  + rng() * 1036);
+    const y    = Math.round(22  + rng() * 1036);
+    const hubR = rng();
+    const a2R  = rng();
+    const rR   = rng();
+    const opR  = rng();
+    const hub  = hubR > 0.80;
+    return {
+      x, y, hub,
+      useA2: a2R > 0.52,
+      r:  hub ? Math.round(5 + rR * 5) : Math.round(1 + rR * 2.5),
+      op: hub ? (0.55 + opR * 0.28).toFixed(2) : (0.28 + opR * 0.24).toFixed(2),
+    };
+  });
+
+  // Connection lines between nodes < 195px apart — 1 rng call per line
+  const lines = [];
+  for (let i = 0; i < nodes.length && lines.length < 18; i++) {
+    for (let j = i + 1; j < nodes.length && lines.length < 18; j++) {
+      const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+      if (dx * dx + dy * dy < 195 * 195) {
+        lines.push({ a: nodes[i], b: nodes[j], op: (0.04 + rng() * 0.09).toFixed(2) });
+      }
+    }
+  }
+
+  return `
+  <div style="position:absolute;inset:0;z-index:1;
+    background:
+      radial-gradient(ellipse at ${g1x}% ${g1y}%,${a('0.15')} 0%,transparent 44%),
+      radial-gradient(ellipse at ${g2x}% ${g2y}%,${a2('0.09')} 0%,transparent 36%),
+      radial-gradient(ellipse at ${g3x}% ${g3y}%,${a('0.07')} 0%,transparent 32%),
+      linear-gradient(160deg,#071828 0%,#0c2644 30%,#071420 60%,#030a12 100%);">
+  </div>
+  <svg style="position:absolute;inset:0;z-index:2;width:100%;height:100%;" viewBox="0 0 1080 1080" preserveAspectRatio="xMidYMid slice">
+    ${lines.map(l => `<line x1="${l.a.x}" y1="${l.a.y}" x2="${l.b.x}" y2="${l.b.y}" stroke="${l.a.useA2 ? a2(l.op) : a(l.op)}" stroke-width="1"/>`).join('\n    ')}
+    ${nodes.filter(n => n.hub).map(n => `<circle cx="${n.x}" cy="${n.y}" r="${n.r * 3}" fill="${n.useA2 ? a2('0.08') : a('0.08')}"/>
+    <circle cx="${n.x}" cy="${n.y}" r="${n.r * 5}" fill="${n.useA2 ? a2('0.04') : a('0.04')}"/>`).join('\n    ')}
+    ${nodes.map(n => `<circle cx="${n.x}" cy="${n.y}" r="${n.r}" fill="${n.useA2 ? a2(n.op) : a(n.op)}"/>`).join('\n    ')}
+  </svg>
+  <div style="position:absolute;inset:0;z-index:3;opacity:0.024;
+    background-image:linear-gradient(rgba(${hexToRgb(p.accent)},1) 1px,transparent 1px),linear-gradient(90deg,rgba(${hexToRgb(p.accent)},1) 1px,transparent 1px);
+    background-size:90px 90px;">
+  </div>`;
+}
+
 function applyAccent(headline, accent_word, accentColor) {
   if (!headline) return '';
   const w = (accent_word || '').trim();
@@ -307,7 +370,7 @@ ${FONTS}
 <body>
 <div style="position:relative;width:${W}px;height:${H}px;${bgStyle}font-family:'Inter',sans-serif;">
 
-  ${isSvg ? buildSvgBg(p, 0, seed) : ''}
+  ${isSvg ? buildInstagramBg(p, seed) : ''}
 
   <!-- L3: Cinematic gradient — transparent top, dark bottom -->
   <div style="position:absolute;inset:0;z-index:4;

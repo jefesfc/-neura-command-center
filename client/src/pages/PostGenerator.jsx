@@ -92,7 +92,7 @@ const FORMAT_SIZES = {
 export default function PostGenerator() {
   const [form, setForm] = useState({
     brief: '', system: 'system-lead-engine', format: '1:1',
-    tone: 'auto', palette: 'navy', post_type: 'single',
+    tone: 'auto', post_type: 'single',
   });
   const [phase, setPhase]       = useState('idle');
   const [steps, setSteps]       = useState({});
@@ -449,28 +449,7 @@ export default function PostGenerator() {
                 </div>
               </div>
 
-              {/* 6. Color Palette */}
-              <div>
-                <label className="label mb-2 block">Color Palette</label>
-                <div className="flex gap-2">
-                  {PALETTES.map(pl => (
-                    <button key={pl.value} onClick={() => set('palette', pl.value)}
-                      className={`flex-1 rounded-xl border p-2.5 flex flex-col items-center gap-1.5 transition-all ${
-                        form.palette === pl.value ? 'border-teal/60 bg-teal/8' : 'border-black/10 hover:border-black/20'
-                      }`}
-                    >
-                      <div className="flex gap-1">
-                        {pl.colors.map((c, i) => (
-                          <div key={i} className="w-3 h-3 rounded-full border border-black/15" style={{ background: c }} />
-                        ))}
-                      </div>
-                      <span className="label text-[10px]">{pl.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* 7. Image Source + Style */}
+              {/* 6. Image Source + Style */}
               <div>
                 <label className="label mb-2 block">Background</label>
                 <div className="flex gap-2 mb-3">

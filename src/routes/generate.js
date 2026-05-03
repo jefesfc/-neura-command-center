@@ -284,7 +284,7 @@ async function runPipeline(jobId, { brief, system, format, tone, palette, post_t
 
     // ── Step 5: Caption — runs on validated copy ──────────────────────────────
     setStep('caption', 'running');
-    const captionData = await runCaptionAgent({ headline: copy.headline, bullets: copy.bullets, cta: copy.cta, system, brief, postId });
+    const captionData = await runCaptionAgent({ headline: copy.headline, bullets: copy.bullets, cta: copy.cta, system, brief, postId, platform, cdInstruction: cd?.instructions?.caption_agent || '' });
     const { fullCaption, hashtagsStr } = assembleCaption(captionData);
     await query('UPDATE posts SET caption=$1, hashtags=$2, status=$3 WHERE id=$4',
       [fullCaption, hashtagsStr, 'ready', postId]);
